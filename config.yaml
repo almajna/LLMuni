@@ -1,0 +1,68 @@
+# LLMuni configuration: every tunable parameter of the pipeline lives here.
+project: LLMuni
+benchmark_version: v2026.10
+seed: 20261005
+timezone: America/Los_Angeles
+
+paths:
+  raw: data/raw              # downloads (gitignored)
+  processed: data/processed  # small derived tables (committed)
+  manifest: data/MANIFEST.json
+  reports: reports
+  cache: cache               # router / oracle / LLM response caches (gitignored)
+
+data:
+  # Tasks are dated inside this Monday-Sunday week. It must avoid US public holidays
+  # and be served by every GTFS feed (`make data` fails otherwise).
+  reference_week_start: 2026-10-05
+  min_valid_pois_per_category: 15
+  dedup_radius_m: 75
+  gtfs:
+    muni:
+      label: Muni
+      # DataSF dataset dni7-qpv3 always serves the current SFMTA production feed. (The
+      # muni_gtfs-current.zip linked from sfmta.com lagged a schedule change in Sep 2026.)
+      url: https://data.sfgov.org/download/dni7-qpv3/application%2Fzip
+    bart:
+      label: BART
+      url: https://www.bart.gov/dev/schedules/google_transit.zip
+  osm:
+    # BBBike's weekly San Francisco cut of the OSM planet (bbox -122.54,37.54 .. -122.32,37.93).
+    url: https://download.bbbike.org/osm/bbbike/SanFrancisco/SanFrancisco.osm.pbf
+  boundary_query: San Francisco, California, USA
+
+# Errand categories: OSM tag rules, which hours tag to trust, optional brand filters
+# (brand patterns are lowercase substrings of the name/brand tags).
+categories:
+  pharmacy:
+    # shop=chemist: US drugstores (e.g. some Walgreens/CVS) mapped without amenity=pharmacy
+    tags: {amenity: [pharmacy], healthcare: [pharmacy], shop: [chemist]}
+    hours_keys: ["opening_hours:pharmacy", opening_hours]  # prescription-counter hours win
+  post_office:
+    tags: {amenity: [post_office]}
+  supermarket:
+    tags: {shop: [supermarket]}
+    brands:
+      "Trader Joe's": [trader joe]
+      Safeway: [safeway]
+      Whole Foods Market: [whole foods]
+  hardware:
+    tags: {shop: [hardware, doityourself]}
+  bank_atm:
+    tags: {amenity: [bank, atm]}
+  library:
+    tags: {amenity: [library]}
+  coffee:
+    tags: {amenity: [cafe]}
+  bakery:
+    tags: {shop: [bakery]}
+  dry_cleaning:
+    tags: {shop: [dry_cleaning]}
+  bookstore:
+    tags: {shop: [books]}
+  florist:
+    tags: {shop: [florist]}
+  bike_shop:
+    tags: {shop: [bicycle]}
+  electronics:
+    tags: {shop: [electronics]}

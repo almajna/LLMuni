@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -164,9 +164,6 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-/site
-
 # mypy
 .mypy_cache/
 .dmypy.json
@@ -216,3 +213,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# LLMuni: raw downloads, caches, local toolchains, node deps
+data/raw/
+cache/
+*.osm.pbf
+.tools/
+node_modules/

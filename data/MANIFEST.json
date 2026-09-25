@@ -1,0 +1,154 @@
+{
+  "project": "LLMuni",
+  "benchmark_version": "v2026.10",
+  "reference_week": {
+    "start": "2026-10-05",
+    "end": "2026-10-11"
+  },
+  "sources": {
+    "gtfs_muni": {
+      "url": "https://data.sfgov.org/download/dni7-qpv3/application%2Fzip",
+      "sha256": "533768f351d72ac647c468dc00a5004f61f2e11bc3706d862b914cc0f85fc0b0",
+      "bytes": 8159297,
+      "downloaded_at": "2026-09-25T17:38:41+00:00",
+      "http_last_modified": null,
+      "label": "Muni",
+      "file": "data/raw/gtfs_muni.zip",
+      "agencies": [
+        "San Francisco Municipal Transportation Agency"
+      ],
+      "feed_info": {},
+      "service_date_range": [
+        "2026-08-29",
+        "2027-01-15"
+      ],
+      "n_routes": 68,
+      "n_stops": 3240,
+      "n_trips": 34668,
+      "reference_week_service": {
+        "2026-10-05": {
+          "service_ids": 1,
+          "trips": 9482
+        },
+        "2026-10-06": {
+          "service_ids": 1,
+          "trips": 9482
+        },
+        "2026-10-07": {
+          "service_ids": 1,
+          "trips": 9482
+        },
+        "2026-10-08": {
+          "service_ids": 1,
+          "trips": 9482
+        },
+        "2026-10-09": {
+          "service_ids": 1,
+          "trips": 9482
+        },
+        "2026-10-10": {
+          "service_ids": 1,
+          "trips": 7861
+        },
+        "2026-10-11": {
+          "service_ids": 1,
+          "trips": 7861
+        }
+      }
+    },
+    "gtfs_bart": {
+      "url": "https://www.bart.gov/dev/schedules/google_transit.zip",
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+      "bytes": 892312,
+      "downloaded_at": "2026-09-25T17:38:42+00:00",
+      "http_last_modified": "Tue, 04 Aug 2026 18:23:24 GMT",
+      "label": "BART",
+      "file": "data/raw/gtfs_bart.zip",
+      "agencies": [
+        "Bay Area Rapid Transit"
+      ],
+      "feed_info": {
+        "feed_publisher_name": "Bay Area Rapid Transit",
+        "feed_version": "72",
+        "feed_start_date": "20260112",
+        "feed_end_date": "20260830"
+      },
+      "service_date_range": [
+        "2026-08-10",
+        "2027-01-10"
+      ],
+      "n_routes": 14,
+      "n_stops": 287,
+      "n_trips": 4417,
+      "reference_week_service": {
+        "2026-10-05": {
+          "service_ids": 3,
+          "trips": 1021
+        },
+        "2026-10-06": {
+          "service_ids": 3,
+          "trips": 1021
+        },
+        "2026-10-07": {
+          "service_ids": 3,
+          "trips": 1021
+        },
+        "2026-10-08": {
+          "service_ids": 3,
+          "trips": 1021
+        },
+        "2026-10-09": {
+          "service_ids": 3,
+          "trips": 1021
+        },
+        "2026-10-10": {
+          "service_ids": 3,
+          "trips": 883
+        },
+        "2026-10-11": {
+          "service_ids": 3,
+          "trips": 785
+        }
+      }
+    },
+    "osm": {
+      "url": "https://download.bbbike.org/osm/bbbike/SanFrancisco/SanFrancisco.osm.pbf",
+      "sha256": "af8a0a327965220266cfd2fefc5fd83e49898b1247f5e9af74df4aede87c6f7a",
+      "bytes": 32938443,
+      "downloaded_at": "2026-09-25T17:38:47+00:00",
+      "http_last_modified": "Sat, 19 Sep 2026 17:21:39 GMT",
+      "file": "data/raw/sf.osm.pbf",
+      "snapshot_timestamp": "2026-09-18T23:00:00Z"
+    },
+    "sf_boundary": {
+      "source": "OpenStreetMap boundary via Nominatim (osmnx.geocode_to_gdf)",
+      "query": "San Francisco, California, USA",
+      "osm": "relation/111968",
+      "display_name": "San Francisco, California, United States",
+      "file": "data/processed/sf_boundary.geojson"
+    }
+  },
+  "pois": {
+    "file": "data/processed/pois.parquet",
+    "sha256": "be96e1ed0a95e8f0358100a439cec2f073862272927506016e519dd607c9c872",
+    "rows": 1933,
+    "rows_with_valid_hours": 945,
+    "categories_kept": [
+      "pharmacy",
+      "post_office",
+      "supermarket",
+      "hardware",
+      "bank_atm",
+      "library",
+      "coffee",
+      "bakery",
+      "dry_cleaning",
+      "bookstore",
+      "florist",
+      "bike_shop"
+    ],
+    "categories_dropped": [
+      "electronics"
+    ]
+  }
+}

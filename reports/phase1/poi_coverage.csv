@@ -1,0 +1,14 @@
+category,pois,with_hours_tag,parseable,valid,pct_valid,kept
+pharmacy,54,27,27,27,50.0,True
+post_office,86,41,41,41,47.7,True
+supermarket,120,77,77,77,64.2,True
+hardware,53,30,30,30,56.6,True
+bank_atm,323,123,123,122,37.8,True
+library,48,23,23,23,47.9,True
+coffee,793,423,422,421,53.1,True
+bakery,142,76,76,76,53.5,True
+dry_cleaning,126,39,39,39,31.0,True
+bookstore,61,38,38,38,62.3,True
+florist,69,21,21,20,29.0,True
+bike_shop,43,26,25,25,58.1,True
+electronics,15,7,6,6,40.0,False
