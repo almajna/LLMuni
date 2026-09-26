@@ -2,8 +2,9 @@
 
 Before every call the ledger reserves that call's worst case (estimated prompt tokens x 1.25 at the input
 price, plus at the output price the larger of max_tokens and 1.5x the model's largest observed completion:
-some providers let reasoning run past max_tokens). The call is refused unless spent + reserved + worst
-case stays within the budget; afterwards the reservation is replaced by the cost OpenRouter reports.
+some providers let reasoning run past max_tokens). The call waits while spent + reserved + worst case would
+exceed the budget because of other calls in flight, and is refused if it would exceed it on its own;
+afterwards the reservation is replaced by the cost OpenRouter reports.
 """
 
 from __future__ import annotations
@@ -53,10 +54,11 @@ class Ledger:
     """Actual spend (OpenRouter's reported cost) plus worst-case reservations for calls in flight."""
 
     def __init__(self, path: Path, budget: float) -> None:
-        self.path, self.budget, self._lock = path, budget, threading.Lock()
+        self.path, self.budget = path, budget
+        self._changed = threading.Condition()
         records = [json.loads(line) for line in (path.read_text(encoding="utf-8").splitlines() if path.exists() else []) if line]
         self.spent = sum(r["cost_usd"] for r in records)
-        self.reserved = 0.0
+        self.reserved, self.in_flight = 0.0, 0
         self.max_completion: dict[str, int] = {}  # largest completion seen per model (some exceed max_tokens)
         for r in records:
             self._observe(r)
@@ -67,25 +69,35 @@ class Ledger:
             self.max_completion[model] = max(self.max_completion.get(model, 0), tokens)
 
     def reserve(self, amount: float) -> None:
-        with self._lock:
-            if self.spent + self.reserved + amount > self.budget:
-                raise BudgetExceeded(
-                    f"the next call could cost up to ${amount:.2f}: ${self.spent:.2f} spent and "
-                    f"${self.reserved:.2f} reserved of the ${self.budget:.2f} budget")
+        """Reserve a call's worst case. When only other calls' reservations stand in the way, wait for them
+        to settle; refuse when the call would not fit even with nothing in flight."""
+        with self._changed:
+            while self.spent + self.reserved + amount > self.budget:
+                if self.in_flight == 0 or self.spent + amount > self.budget:
+                    raise BudgetExceeded(
+                        f"the next call could cost up to ${amount:.2f}: ${self.spent:.2f} spent and "
+                        f"${self.reserved:.2f} reserved of the ${self.budget:.2f} budget")
+                self._changed.wait()
             self.reserved += amount
+            self.in_flight += 1
 
     def release(self, amount: float) -> None:
-        with self._lock:
-            self.reserved -= amount
+        with self._changed:
+            self._done(amount)
 
     def settle(self, amount: float, record: dict) -> None:
-        with self._lock:
-            self.reserved -= amount
+        with self._changed:
+            self._done(amount)
             self.spent += record["cost_usd"]
             self._observe(record)
             self.path.parent.mkdir(parents=True, exist_ok=True)
             with self.path.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(record) + "\n")
+
+    def _done(self, amount: float) -> None:
+        self.in_flight -= 1
+        self.reserved = self.reserved - amount if self.in_flight else 0.0  # no float drift once idle
+        self._changed.notify_all()
 
 
 def _transient(exc: BaseException) -> bool:

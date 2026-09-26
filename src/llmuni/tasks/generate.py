@@ -275,26 +275,44 @@ class Generator:
         return task
 
 
+def _tier_orders(cfg: Config, tasks: list[Task]) -> dict[str, tuple[list[str], list[str]]]:
+    """One fixed shuffled order per tier and kind (feasible, infeasible); subsets take prefixes of it."""
+    rng = random.Random(f"{cfg.seed}:{cfg.benchmark_version}:subsets")
+    order = {}
+    for tier in cfg.tasks.tiers:
+        pool = [t for t in tasks if t.tier == tier]
+        order[tier] = ([t.task_id for t in rng.sample(pool, len(pool)) if not t.design.infeasible],
+                       [t.task_id for t in rng.sample(pool, len(pool)) if t.design.infeasible])
+    return order
+
+
+def _per_tier(cfg: Config, order: dict, quota: int) -> dict[str, list[str]]:
+    """`quota` tasks per tier, at least one of them infeasible. Prefixes are nested as the quota grows."""
+    n_infeasible = max(1, round(quota * cfg.tasks.infeasible_share))
+    return {tier: order[tier][0][: quota - n_infeasible] + order[tier][1][:n_infeasible] for tier in cfg.tasks.tiers}
+
+
+def final_rounds(cfg: Config, tasks: list[Task]) -> list[list[str]]:
+    """The final subset as rounds of one task per tier: round k holds what each tier adds when its quota
+    grows from k-1 to k. The first pilot_size/3 rounds are the pilot, so a run that stops after any round
+    covers every tier equally."""
+    order, tiers = _tier_orders(cfg, tasks), list(cfg.tasks.tiers)
+    rounds, before = [], {tier: [] for tier in tiers}
+    for quota in range(1, cfg.tasks.final_size // len(tiers) + 1):
+        now = _per_tier(cfg, order, quota)
+        rounds.append([next(t for t in now[tier] if t not in before[tier]) for tier in tiers])
+        before = now
+    return rounds
+
+
 def pick_subsets(cfg: Config, tasks: list[Task]) -> dict[str, list[str]]:
     """Nested, stratified subsets: pilot (equal per tier, at least one infeasible task per tier) inside
     final (same rule, larger); calibration is feasible pilot tasks taken round-robin across tiers.
     Nesting means every answer bought for a smaller subset is reused by the larger one."""
-    rng = random.Random(f"{cfg.seed}:{cfg.benchmark_version}:subsets")
-    tiers, share = list(cfg.tasks.tiers), cfg.tasks.infeasible_share
-    order = {}
-    for tier in tiers:  # one fixed shuffled order per tier and kind; subsets take prefixes of it
-        pool = [t for t in tasks if t.tier == tier]
-        order[tier] = ([t.task_id for t in rng.sample(pool, len(pool)) if not t.design.infeasible],
-                       [t.task_id for t in rng.sample(pool, len(pool)) if t.design.infeasible])
+    order, tiers = _tier_orders(cfg, tasks), list(cfg.tasks.tiers)
 
     def take(size: int) -> dict[str, list[str]]:
-        picked = {}
-        for tier in tiers:
-            quota = size // len(tiers)
-            n_infeasible = max(1, round(quota * share))
-            feasible, infeasible = order[tier]
-            picked[tier] = feasible[: quota - n_infeasible] + infeasible[:n_infeasible]
-        return picked
+        return _per_tier(cfg, order, size // len(tiers))
 
     pilot, final = take(cfg.tasks.pilot_size), take(cfg.tasks.final_size)
     feasible_ids = {t.task_id for t in tasks if not t.design.infeasible}

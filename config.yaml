@@ -94,16 +94,17 @@ tasks:
       min_rare: 2
 
 eval:
-  budget_usd: 27                 # hard cap on TOTAL spend across all runs (ledger); BUDGET_USD overrides
+  budget_usd: 29                 # hard cap on TOTAL spend across all runs (ledger); BUDGET_USD overrides
   pilot_modes: [closed_book, open_book]
   modes: [closed_book, open_book]
-  tool_mode_models: 3            # tool_use runs for the top N models of the pilot (open book)
+  tool_mode_models: 0            # v2: tool_use for the pilot's top N open-book models (make finish TOOL_MODE=3)
+  round_margin: 1.25             # final run: a round (one task per tier) starts only if the budget left covers 1.25x its expected cost
   max_tool_calls: 40             # per task in tool_use mode
   reasoning_effort: medium       # sent to models that support OpenRouter's `reasoning` parameter
   max_output_tokens: 8000        # per call, reasoning included: bounds each call's worst-case cost
   est_output_tokens: 6000        # expected per answer before calibration, for cost estimates
   est_tool_turns: 12             # expected model turns per tool_use task, for cost estimates
-  concurrency: 4
+  concurrency: 6
   request_timeout_s: 600
   # Latest flagship per lab on OpenRouter (2026-09-25); needs approval before any paid run.
   models:

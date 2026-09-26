@@ -47,3 +47,32 @@ def test_deadline_sentence_reuses_the_errands_own_wording():
 def test_brand_replaces_the_generic_store_noun():
     assert noun(ErrandSpec(category="supermarket", brand="Safeway", service_min=20)) == "Safeway"
     assert noun(ErrandSpec(category="bank_atm", service_min=5)) == "bank or ATM"
+
+
+def _stub_tasks(per_tier: int = 100, infeasible_every: int = 10) -> list[Task]:
+    tasks = []
+    for tier in ("easy", "medium", "hard"):
+        for k in range(per_tier):
+            tasks.append(Task(
+                task_id=f"t-{tier}-{k:03d}", benchmark_version="test", tier=tier, weekday="Wednesday", date="2026-10-07",
+                start=Start(place_id="L01", label="a", neighborhood="n", lat=37.76, lon=-122.42, depart_time="09:00"),
+                errands=[ErrandSpec(category="pharmacy", service_min=10)], end=None, candidates={}, prompt="p",
+                design=Design(infeasible=k % infeasible_every == 0)))
+    return tasks
+
+
+def test_final_rounds_cover_the_final_subset_one_task_per_tier_pilot_first():
+    from llmuni.config import load_config
+    from llmuni.tasks.generate import final_rounds, pick_subsets
+
+    cfg, tasks = load_config(), _stub_tasks()
+    subsets, rounds = pick_subsets(cfg, tasks), final_rounds(cfg, tasks)
+    tier = {t.task_id: t.tier for t in tasks}
+    assert all(sorted(tier[t] for t in r) == ["easy", "hard", "medium"] for r in rounds)
+    assert sorted(t for r in rounds for t in r) == subsets["final"]
+    per_tier = cfg.tasks.pilot_size // 3
+    assert sorted(t for r in rounds[:per_tier] for t in r) == subsets["pilot"]
+    infeasible = {t.task_id for t in tasks if t.design.infeasible}
+    for n in range(1, len(rounds) + 1):  # every prefix keeps about the configured infeasible share
+        picked = [t for r in rounds[:n] for t in r if tier[t] == "easy"]
+        assert sum(t in infeasible for t in picked) == max(1, round(n * cfg.tasks.infeasible_share))

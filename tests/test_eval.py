@@ -1,3 +1,4 @@
+import threading
 from datetime import date
 
 import numpy as np
@@ -7,6 +8,7 @@ from llmuni.eval import prompts
 from llmuni.eval.aggregate import headline, summarize
 from llmuni.eval.baselines import greedy
 from llmuni.eval.client import BudgetExceeded, Ledger
+from llmuni.eval.run import RoundGate, rounds_that_fit
 from llmuni.eval.tools import TravelTool
 from llmuni.oracle.model import Errand, Instance, service_table
 from llmuni.router import TravelMatrix, fifo_arrivals
@@ -40,19 +42,68 @@ def _matrix() -> TravelMatrix:
 
 def test_ledger_refuses_a_call_whose_worst_case_would_cross_the_budget(tmp_path):
     ledger = Ledger(tmp_path / "ledger.jsonl", budget=1.00)
-    ledger.reserve(0.60)
     with pytest.raises(BudgetExceeded):
-        ledger.reserve(0.50)  # 0.60 reserved + 0.50 > 1.00
+        ledger.reserve(1.10)  # cannot fit even with nothing in flight
+    ledger.reserve(0.60)
     ledger.settle(0.60, {"cost_usd": 0.10})  # the call actually cost 0.10
     ledger.reserve(0.85)  # 0.10 spent + 0.85 fits
+    ledger.release(0.85)
+    with pytest.raises(BudgetExceeded):
+        ledger.reserve(0.95)  # 0.10 spent + 0.95 > 1.00
     assert Ledger(tmp_path / "ledger.jsonl", budget=1.00).spent == pytest.approx(0.10)  # spend persists
 
 
-def test_ledger_remembers_each_models_largest_completion(tmp_path):
+def test_ledger_waits_for_calls_in_flight_instead_of_refusing(tmp_path):
+    ledger = Ledger(tmp_path / "ledger.jsonl", budget=1.00)
+    ledger.reserve(0.60)
+    waiter = threading.Thread(target=ledger.reserve, args=(0.50,))  # 0.60 reserved + 0.50 > 1.00: wait
+    waiter.start()
+    waiter.join(0.2)
+    assert waiter.is_alive() and ledger.in_flight == 1
+    ledger.settle(0.60, {"cost_usd": 0.20})  # 0.20 spent + 0.50 fits
+    waiter.join(2)
+    assert not waiter.is_alive() and ledger.reserved == pytest.approx(0.50)
+
+
+def test_a_waiting_call_is_refused_if_what_was_spent_leaves_no_room(tmp_path):
+    ledger = Ledger(tmp_path / "ledger.jsonl", budget=1.00)
+    ledger.reserve(0.60)
+    errors = []
+    waiter = threading.Thread(target=lambda: _capture(errors, ledger.reserve, 0.50))
+    waiter.start()
+    ledger.settle(0.60, {"cost_usd": 0.55})  # 0.55 spent + 0.50 > 1.00
+    waiter.join(2)
+    assert errors and isinstance(errors[0], BudgetExceeded)
+
+
+def _capture(errors: list, fn, *args) -> None:
+    try:
+        fn(*args)
+    except Exception as exc:  # noqa: BLE001 - the test inspects it
+        errors.append(exc)
+
+
+def test_round_gate_admits_whole_rounds_while_their_expected_cost_fits(tmp_path):
     ledger = Ledger(tmp_path / "ledger.jsonl", budget=10.0)
-    ledger.reserve(1.0)
-    ledger.settle(1.0, {"model": "x-ai/grok", "cost_usd": 0.2, "completion_tokens": 39000})
-    assert Ledger(tmp_path / "ledger.jsonl", budget=10.0).max_completion["x-ai/grok"] == 39000
+    ledger.reserve(4.0)
+    ledger.settle(4.0, {"cost_usd": 4.0})  # $6 left
+    rounds = {"e6": 6, "m6": 6, "e7": 7, "m7": 7, "e8": 8, "m8": 8}
+    expected = {("a", "open_book", t): 1.0 for t in rounds}  # $2 per round
+    gate = RoundGate(ledger, expected, rounds, margin=1.25)
+    assert gate.admit(("a", "open_book", "e6"))  # 6 >= 1.25 x 2
+    assert gate.admit(("a", "open_book", "m6"))  # same round
+    assert gate.admit(("a", "open_book", "e7"))  # 6 - 2 outstanding = 4 >= 2.5
+    assert not gate.admit(("a", "open_book", "e8"))  # 6 - 4 outstanding = 2 < 2.5
+    for key in expected:
+        gate.done(key)
+    assert not gate.admit(("a", "open_book", "m8"))  # a refusal is final: tiers stay balanced
+
+
+def test_rounds_that_fit_matches_the_gate():
+    rounds = {"e6": 6, "m6": 6, "e7": 7, "m7": 7, "e8": 8, "m8": 8}
+    calls = [{"key": ("a", "open_book", t), "expected": 1.0} for t in rounds]
+    fit = rounds_that_fit(calls, rounds, left=6.0, margin=1.25)
+    assert fit["rounds"] == [6, 7] and fit["tasks"] == 4 and fit["expected"] == pytest.approx(4.0)
 
 
 def test_travel_tool_answers_with_the_router_clock_and_enforces_the_call_limit():

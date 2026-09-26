@@ -30,6 +30,8 @@ def main(argv: list[str] | None = None) -> None:
     ev.add_argument("--dry-run", action="store_true", help="write the cost estimate; call no model")
     ev.add_argument("--baselines-only", action="store_true", help="grade the free baselines only")
     ev.add_argument("--models", nargs="*", help="override eval.models")
+    ev.add_argument("--tool-models", type=int, help="final run: tool_use for the pilot's top N models "
+                                                   "(default eval.tool_mode_models)")
 
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", datefmt="%H:%M:%S")
@@ -77,4 +79,4 @@ def main(argv: list[str] | None = None) -> None:
         from llmuni.eval.run import run_eval
 
         run_eval(cfg, subset=args.subset, dry_run=args.dry_run, baselines_only=args.baselines_only,
-                 models=args.models)
+                 models=args.models, tool_models=args.tool_models)

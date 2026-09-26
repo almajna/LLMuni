@@ -102,6 +102,7 @@ class EvalConfig(BaseModel):
     pilot_modes: list[str]
     modes: list[str]
     tool_mode_models: int
+    round_margin: float = 1.25
     max_tool_calls: int
     reasoning_effort: str | None = None
     max_output_tokens: int
