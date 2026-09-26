@@ -90,8 +90,9 @@ export class Replay {
     this.$(".play").addEventListener("click", () => (this.playing ? this.pause() : this.play()));
     this.$(".speed").addEventListener("click", () => {
       this.speed = (this.speed + 1) % SPEEDS.length;
-      this.$(".speed").textContent = `${this.speed + 1}×`;
-      this.$(".speed").setAttribute("aria-label", `Replay speed ${this.speed + 1}×`);
+      const rate = `${SPEEDS[this.speed] / SPEEDS[0]}×`;
+      this.$(".speed").textContent = rate;
+      this.$(".speed").setAttribute("aria-label", `Replay speed ${rate}`);
     });
     this.root.querySelectorAll<HTMLButtonElement>(".mode-switch button").forEach((b) =>
       b.addEventListener("click", () => this.onChange(this.task.id, b.dataset.mode!)));
@@ -154,9 +155,12 @@ export class Replay {
       ...this.units.flatMap((u) => u.path.map((p) => [p[0], p[1]] as XY))];
     const lons = pts.map((p) => p[0]), lats = pts.map((p) => p[1]);
     const bounds: [XY, XY] = [[Math.min(...lons), Math.min(...lats)], [Math.max(...lons), Math.max(...lats)]];
-    const wide = innerWidth >= 1000;
-    // Room for the rail (desktop), the headline plate and the alert labels that stack above the meet-up.
-    const pad = wide ? { top: 170, bottom: 80, left: 480, right: 120 } : { top: 200, bottom: 34, left: 34, right: 40 };
+    // Room for the rail where it overlays the map, the headline plate, and the alert labels at the meet-up.
+    const rail = this.root.querySelector<HTMLElement>(".rail")!;
+    const overlay = getComputedStyle(rail).position === "absolute";
+    const pad = overlay
+      ? { top: 170, bottom: 80, left: Math.round(rail.getBoundingClientRect().right - this.root.getBoundingClientRect().left) + 40, right: 120 }
+      : { top: 200, bottom: 34, left: 34, right: 40 };
     const camera = this.map.cameraForBounds(bounds, { padding: pad, maxZoom: 15, bearing: -16 });
     if (!camera) return;
     this.map.jumpTo({ ...camera, pitch: 48, bearing: -16 });

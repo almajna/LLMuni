@@ -29,7 +29,7 @@ examples:  ## worked example per tier with itinerary maps -> reports/phase4/
 estimate:  ## cost estimates for calibration, pilot and final runs (no model calls)
 	$(LLMUNI) eval --subset calibration --dry-run
 	$(LLMUNI) eval --subset pilot --dry-run
-	$(LLMUNI) eval --subset final --dry-run
+	$(LLMUNI) eval --subset final --dry-run --tool-models $(TOOL_MODE)
 
 calibrate:  ## 5 pilot tasks x models, open book: measures real token use (spends money, capped)
 	$(LLMUNI) eval --subset calibration

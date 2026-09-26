@@ -93,6 +93,7 @@ export class Board {
       const row = rows[i];
       slot.tr.hidden = !row;
       slot.tr.classList.toggle("is-baseline", !!row?.baseline);
+      slot.tr.classList.toggle("first-baseline", !!row?.baseline && !rows[i - 1]?.baseline);
       slot.lamp.style.setProperty("--unit", row && !row.baseline ? modelColor(row.id, this.data.meta.models) : "transparent");
       COLUMNS.forEach((c, k) => {
         const text = row ? c.value(row) : "";

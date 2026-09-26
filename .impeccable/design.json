@@ -1,0 +1,933 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-26T13:22:57.270Z",
+  "title": "Design System: LLMuni",
+  "extensions": {
+    "colorMeta": {
+      "gold": {
+        "role": "primary",
+        "displayName": "Optimal Gold",
+        "canonical": "#f0a500",
+        "oklch": "oklch(77.5% 0.163 76.2)",
+        "tonalRamp": [
+          "#130900",
+          "#342100",
+          "#5a3b00",
+          "#825800",
+          "#ad7600",
+          "#da9600",
+          "#ffbb4c",
+          "#ffebd0"
+        ]
+      },
+      "alert": {
+        "role": "secondary",
+        "displayName": "Alert Red",
+        "canonical": "#e5484d",
+        "oklch": "oklch(62.6% 0.193 23.0)",
+        "tonalRamp": [
+          "#1f0002",
+          "#4d0009",
+          "#800016",
+          "#b60d26",
+          "#de4148",
+          "#ff7270",
+          "#ffb2ae",
+          "#ffe8e7"
+        ]
+      },
+      "alert-ink": {
+        "role": "secondary",
+        "displayName": "Alert Ink",
+        "canonical": "#ff8f8a",
+        "oklch": "oklch(76.9% 0.136 23.4)",
+        "tonalRamp": [
+          "#1f0002",
+          "#4d0008",
+          "#7a141b",
+          "#a03a3a",
+          "#c75d5a",
+          "#ee807c",
+          "#ffb2ad",
+          "#ffe8e7"
+        ]
+      },
+      "alert-plate": {
+        "role": "secondary",
+        "displayName": "Alert Plate",
+        "canonical": "#962024eb",
+        "oklch": "oklch(44.3% 0.154 24.6)",
+        "tonalRamp": [
+          "#1f0001",
+          "#4d0007",
+          "#800011",
+          "#a73232",
+          "#ce5652",
+          "#f67a74",
+          "#ffb2ac",
+          "#ffe9e6"
+        ]
+      },
+      "alert-plate-ink": {
+        "role": "secondary",
+        "displayName": "Plate Ink",
+        "canonical": "#ffecea",
+        "oklch": "oklch(95.8% 0.021 24.8)",
+        "tonalRamp": [
+          "#130807",
+          "#2f2120",
+          "#4d3e3c",
+          "#6d5d5b",
+          "#8f7e7c",
+          "#b2a09e",
+          "#d7c4c2",
+          "#fce9e7"
+        ]
+      },
+      "ok": {
+        "role": "tertiary",
+        "displayName": "Done Sage",
+        "canonical": "#8fcf9c",
+        "oklch": "oklch(79.8% 0.097 150.1)",
+        "tonalRamp": [
+          "#001003",
+          "#002e10",
+          "#0b5024",
+          "#327043",
+          "#559363",
+          "#77b685",
+          "#9bdba8",
+          "#c7ffd1"
+        ]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Night Slate",
+        "canonical": "#0b1110",
+        "oklch": "oklch(17.1% 0.010 183.9)",
+        "tonalRamp": [
+          "#070d0c",
+          "#202725",
+          "#3d4442",
+          "#5c6362",
+          "#7c8483",
+          "#9fa7a6",
+          "#c3cbca",
+          "#e8f1ef"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Console Slate",
+        "canonical": "#111918",
+        "oklch": "oklch(20.5% 0.012 186.8)",
+        "tonalRamp": [
+          "#060d0c",
+          "#1f2726",
+          "#3b4443",
+          "#5a6462",
+          "#7b8583",
+          "#9da8a6",
+          "#c1ccca",
+          "#e6f1f0"
+        ]
+      },
+      "panel-2": {
+        "role": "neutral",
+        "displayName": "Pressed Slate",
+        "canonical": "#172120",
+        "oklch": "oklch(23.8% 0.014 188.6)",
+        "tonalRamp": [
+          "#050d0c",
+          "#1d2726",
+          "#3a4543",
+          "#586463",
+          "#798584",
+          "#9ba8a7",
+          "#bfcccb",
+          "#e4f2f0"
+        ]
+      },
+      "housing": {
+        "role": "neutral",
+        "displayName": "Housing Black",
+        "canonical": "#080c0b",
+        "oklch": "oklch(14.9% 0.007 179.0)",
+        "tonalRamp": [
+          "#080c0b",
+          "#222625",
+          "#3e4342",
+          "#5d6361",
+          "#7e8482",
+          "#a1a6a5",
+          "#c5cbc9",
+          "#eaf0ee"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Engraved Rule",
+        "canonical": "#26332f",
+        "oklch": "oklch(30.8% 0.019 174.2)",
+        "tonalRamp": [
+          "#040e0b",
+          "#1b2824",
+          "#384541",
+          "#576560",
+          "#778681",
+          "#9aa9a4",
+          "#bdcdc8",
+          "#e2f3ed"
+        ]
+      },
+      "rule-2": {
+        "role": "neutral",
+        "displayName": "Inner Rule",
+        "canonical": "#1b2624",
+        "oklch": "oklch(25.7% 0.016 182.7)",
+        "tonalRamp": [
+          "#040d0c",
+          "#1d2826",
+          "#394543",
+          "#586462",
+          "#788683",
+          "#9ba8a6",
+          "#bfcdca",
+          "#e4f2ef"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Console Ink",
+        "canonical": "#ebe8de",
+        "oklch": "oklch(93.1% 0.014 93.0)",
+        "tonalRamp": [
+          "#0d0b05",
+          "#27251e",
+          "#44423a",
+          "#646159",
+          "#858279",
+          "#a8a59c",
+          "#ccc9bf",
+          "#f1eee4"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Faded Ink",
+        "canonical": "#b9c1bb",
+        "oklch": "oklch(80.3% 0.012 153.6)",
+        "tonalRamp": [
+          "#070d09",
+          "#212722",
+          "#3d443f",
+          "#5c635e",
+          "#7d857f",
+          "#a0a7a1",
+          "#c3ccc5",
+          "#e9f1eb"
+        ]
+      },
+      "label": {
+        "role": "neutral",
+        "displayName": "Sage Gray",
+        "canonical": "#8d9f98",
+        "oklch": "oklch(68.6% 0.023 170.3)",
+        "tonalRamp": [
+          "#020e0a",
+          "#1a2923",
+          "#364640",
+          "#55665f",
+          "#758780",
+          "#98aaa3",
+          "#bbcec7",
+          "#e0f4ec"
+        ]
+      },
+      "disabled": {
+        "role": "neutral",
+        "displayName": "Dead Key",
+        "canonical": "#56675f",
+        "oklch": "oklch(49.7% 0.024 165.3)",
+        "tonalRamp": [
+          "#020e09",
+          "#1a2922",
+          "#36463f",
+          "#55665e",
+          "#75877f",
+          "#98aaa1",
+          "#bbcec5",
+          "#e0f4ea"
+        ]
+      },
+      "unverifiable": {
+        "role": "neutral",
+        "displayName": "Unlit Lamp",
+        "canonical": "#5d6c67",
+        "oklch": "oklch(51.7% 0.020 173.4)",
+        "tonalRamp": [
+          "#030e0a",
+          "#1b2824",
+          "#374641",
+          "#566560",
+          "#778681",
+          "#99a9a4",
+          "#bdcec8",
+          "#e2f3ed"
+        ]
+      },
+      "flap-top": {
+        "role": "neutral",
+        "displayName": "Upper Leaf",
+        "canonical": "#242621",
+        "oklch": "oklch(26.5% 0.010 124.9)",
+        "tonalRamp": [
+          "#0a0c08",
+          "#242621",
+          "#41433d",
+          "#60625c",
+          "#81837d",
+          "#a3a6a0",
+          "#c8cac4",
+          "#edf0e9"
+        ]
+      },
+      "flap-bottom": {
+        "role": "neutral",
+        "displayName": "Lower Leaf",
+        "canonical": "#181a17",
+        "oklch": "oklch(21.4% 0.007 135.0)",
+        "tonalRamp": [
+          "#0a0c09",
+          "#242623",
+          "#40433f",
+          "#60625e",
+          "#81837f",
+          "#a3a6a2",
+          "#c7cac6",
+          "#edefeb"
+        ]
+      },
+      "flap-split": {
+        "role": "neutral",
+        "displayName": "Split Line",
+        "canonical": "#060706",
+        "oklch": "oklch(12.6% 0.004 145.4)",
+        "tonalRamp": [
+          "#0a0c0a",
+          "#242524",
+          "#414241",
+          "#606260",
+          "#818381",
+          "#a4a6a4",
+          "#c8cac8",
+          "#edefed"
+        ]
+      },
+      "flap-ink": {
+        "role": "neutral",
+        "displayName": "Flap Ink",
+        "canonical": "#f3efe2",
+        "oklch": "oklch(95.2% 0.018 92.7)",
+        "tonalRamp": [
+          "#0e0b04",
+          "#28251b",
+          "#454237",
+          "#656156",
+          "#868277",
+          "#a9a599",
+          "#cdc9bc",
+          "#f2eee1"
+        ]
+      },
+      "unit-sky": {
+        "role": "data",
+        "displayName": "Sky",
+        "canonical": "#72c3f0",
+        "oklch": "oklch(78.2% 0.102 234.5)",
+        "tonalRamp": [
+          "#000d16",
+          "#00293c",
+          "#004866",
+          "#056992",
+          "#398cb6",
+          "#5eafdc",
+          "#88d4ff",
+          "#ddf2ff"
+        ]
+      },
+      "unit-orchid": {
+        "role": "data",
+        "displayName": "Orchid",
+        "canonical": "#e394d6",
+        "oklch": "oklch(76.7% 0.127 332.8)",
+        "tonalRamp": [
+          "#1a0017",
+          "#43003d",
+          "#67215e",
+          "#8a4280",
+          "#ae63a3",
+          "#d486c7",
+          "#faaaed",
+          "#ffe6fa"
+        ]
+      },
+      "unit-teal": {
+        "role": "data",
+        "displayName": "Teal",
+        "canonical": "#54d1bd",
+        "oklch": "oklch(78.5% 0.114 180.9)",
+        "tonalRamp": [
+          "#000f0c",
+          "#002c26",
+          "#004e44",
+          "#007164",
+          "#009786",
+          "#3abca9",
+          "#67e2cd",
+          "#b9fff1"
+        ]
+      },
+      "unit-periwinkle": {
+        "role": "data",
+        "displayName": "Periwinkle",
+        "canonical": "#a9afff",
+        "oklch": "oklch(78.0% 0.114 280.1)",
+        "tonalRamp": [
+          "#09002f",
+          "#1e175a",
+          "#38377c",
+          "#5658a0",
+          "#767ac5",
+          "#979deb",
+          "#bec4ff",
+          "#ebedff"
+        ]
+      },
+      "unit-cobalt": {
+        "role": "data",
+        "displayName": "Cobalt",
+        "canonical": "#5b8cff",
+        "oklch": "oklch(66.2% 0.179 264.6)",
+        "tonalRamp": [
+          "#000036",
+          "#020379",
+          "#0f329f",
+          "#2c57c5",
+          "#4b7bec",
+          "#78a2ff",
+          "#afc9ff",
+          "#e7efff"
+        ]
+      },
+      "unit-lime": {
+        "role": "data",
+        "displayName": "Lime",
+        "canonical": "#9ad36a",
+        "oklch": "oklch(80.4% 0.149 132.4)",
+        "tonalRamp": [
+          "#050f00",
+          "#162c00",
+          "#2b4d00",
+          "#417000",
+          "#5f9428",
+          "#81b84f",
+          "#a4dd74",
+          "#d2ffb1"
+        ]
+      },
+      "unit-sand": {
+        "role": "data",
+        "displayName": "Sand",
+        "canonical": "#cdb9a0",
+        "oklch": "oklch(79.6% 0.041 73.3)",
+        "tonalRamp": [
+          "#130900",
+          "#31220c",
+          "#4f3f29",
+          "#705e47",
+          "#927f67",
+          "#b5a289",
+          "#dac6ac",
+          "#ffebd2"
+        ]
+      },
+      "fail-late": {
+        "role": "data",
+        "displayName": "Late Salmon",
+        "canonical": "#f29d93",
+        "oklch": "oklch(77.8% 0.104 27.0)",
+        "tonalRamp": [
+          "#1f0001",
+          "#4c0305",
+          "#6f2722",
+          "#934740",
+          "#b86960",
+          "#df8b82",
+          "#ffb3a9",
+          "#ffe9e6"
+        ]
+      },
+      "fail-wrong-address": {
+        "role": "data",
+        "displayName": "Wrong-Address Lavender",
+        "canonical": "#b39cff",
+        "oklch": "oklch(75.2% 0.141 293.4)",
+        "tonalRamp": [
+          "#0f002a",
+          "#2c0461",
+          "#482b84",
+          "#674da8",
+          "#876fce",
+          "#aa92f5",
+          "#cbbfff",
+          "#efecff"
+        ]
+      },
+      "fail-invented": {
+        "role": "data",
+        "displayName": "Invented Violet",
+        "canonical": "#6f52d9",
+        "oklch": "oklch(54.4% 0.197 287.9)",
+        "tonalRamp": [
+          "#0d002c",
+          "#280068",
+          "#4516a1",
+          "#6141c8",
+          "#8166ef",
+          "#a193ff",
+          "#c6c1ff",
+          "#edecff"
+        ]
+      },
+      "map-water": {
+        "role": "neutral",
+        "displayName": "Bay Water",
+        "canonical": "#0a1618",
+        "oklch": "oklch(19.0% 0.018 209.1)",
+        "tonalRamp": [
+          "#030d0f",
+          "#1b282a",
+          "#374547",
+          "#566467",
+          "#778588",
+          "#99a8ab",
+          "#bdcdcf",
+          "#e2f2f5"
+        ]
+      },
+      "map-park": {
+        "role": "neutral",
+        "displayName": "Park",
+        "canonical": "#0f1a16",
+        "oklch": "oklch(20.6% 0.018 169.9)",
+        "tonalRamp": [
+          "#040e0a",
+          "#1d2824",
+          "#394540",
+          "#586560",
+          "#788681",
+          "#9ba9a3",
+          "#becdc7",
+          "#e4f3ed"
+        ]
+      },
+      "map-arterial": {
+        "role": "neutral",
+        "displayName": "Arterial",
+        "canonical": "#24312f",
+        "oklch": "oklch(30.1% 0.018 184.7)",
+        "tonalRamp": [
+          "#030e0c",
+          "#1b2826",
+          "#384543",
+          "#566562",
+          "#778684",
+          "#99a9a6",
+          "#bdcdca",
+          "#e2f3f0"
+        ]
+      },
+      "map-rail": {
+        "role": "neutral",
+        "displayName": "Rail Dash",
+        "canonical": "#3b4a47",
+        "oklch": "oklch(39.5% 0.020 181.8)",
+        "tonalRamp": [
+          "#030e0c",
+          "#1a2826",
+          "#374643",
+          "#556562",
+          "#768683",
+          "#98a9a6",
+          "#bcceca",
+          "#e1f3ef"
+        ]
+      },
+      "map-building": {
+        "role": "neutral",
+        "displayName": "Matte Building",
+        "canonical": "#1c2826",
+        "oklch": "oklch(26.5% 0.017 183.7)",
+        "tonalRamp": [
+          "#040e0c",
+          "#1c2826",
+          "#384543",
+          "#576562",
+          "#788683",
+          "#9aa9a6",
+          "#becdca",
+          "#e3f2f0"
+        ]
+      },
+      "map-label": {
+        "role": "neutral",
+        "displayName": "Neighbourhood Label",
+        "canonical": "#6f817a",
+        "oklch": "oklch(58.7% 0.024 170.1)",
+        "tonalRamp": [
+          "#020e0a",
+          "#192923",
+          "#364640",
+          "#54665f",
+          "#758780",
+          "#97aaa3",
+          "#bbcec7",
+          "#e0f4ec"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Section titles (Standings, How plans fail, Method), uppercase; scope captions go beneath, never above."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "The one-line question in the top strip, the page's h1."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Method step titles and the run-facts and limits heads, uppercase."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Reading copy such as the mode explanation, at most 72ch."
+      },
+      "body-dense": {
+        "displayName": "Body Dense",
+        "purpose": "Copy inside the rail and the standings definitions."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "The scope line under a section title, in sage gray."
+      },
+      "note": {
+        "displayName": "Note",
+        "purpose": "Unit states, the map caption and small print, in sage gray."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Engraved labels that name a panel, uppercase, in sage gray."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Switch keys; the same small caps run 11.5 to 13px for column heads, nav and definition terms."
+      },
+      "readout": {
+        "displayName": "Readout",
+        "purpose": "Finish times, gaps, verdicts and counts; place labels on the map."
+      },
+      "flap": {
+        "displayName": "Flap",
+        "purpose": "Characters on medium split-flap cells (18 by 30px): the standings and the replay clock."
+      },
+      "flap-small": {
+        "displayName": "Flap Small",
+        "purpose": "Characters on small split-flap cells (15 by 23px): the plate and the message board."
+      },
+      "alert-tag": {
+        "displayName": "Alert Tag",
+        "purpose": "Paged alert tags on the map, uppercase; the only bold on the site."
+      }
+    },
+    "shadows": [
+      {
+        "name": "wall-mount",
+        "value": "0 12px 32px rgba(0, 0, 0, 0.45)",
+        "purpose": "Panels hung on the map wall: the rail and the message board."
+      },
+      {
+        "name": "board-housing",
+        "value": "inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 16px 40px rgba(0, 0, 0, 0.35)",
+        "purpose": "The standings housing: a black box with a faint top lip."
+      },
+      {
+        "name": "flap-ledge",
+        "value": "0 1px 0 #000, 0 2px 3px rgba(0, 0, 0, 0.45)",
+        "purpose": "Each flap cell's lower edge and drop."
+      },
+      {
+        "name": "pressed-bar",
+        "value": "inset 0 -2px 0 #ebe8de",
+        "purpose": "State mark, not depth: the ink bar along the bottom of a pressed key."
+      },
+      {
+        "name": "map-text-halo",
+        "value": "0 0 6px #0b1110, 0 0 3px #0b1110",
+        "purpose": "text-shadow for text set directly on the map; the only halo in the system."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Press feedback: switch keys scale to 0.97 (120ms), the speed key to 0.95 (120ms), Play to 0.94 (140ms)."
+      },
+      {
+        "name": "flap-fall",
+        "value": "cubic-bezier(0.55, 0, 1, 0.45)",
+        "purpose": "The upper leaf falls (rotateX 0 to -90deg) over the first half of a flap step; 180px perspective."
+      },
+      {
+        "name": "flap-land",
+        "value": "cubic-bezier(0, 0.55, 0.45, 1)",
+        "purpose": "The lower leaf lands (rotateX 90 to 0deg) over the second half of a flap step."
+      },
+      {
+        "name": "flap-step",
+        "value": "60ms to 90ms",
+        "purpose": "One drum glyph per step: 70ms by default, 64ms on the board, 60ms on the plate and message board, 90ms for the single step of the replay clock."
+      },
+      {
+        "name": "flap-stagger",
+        "value": "11ms to 16ms per cell, 55ms per board row",
+        "purpose": "Cells flip left to right (11ms on the board, 14ms by default, 16ms on the message board, 40ms on the plate); board rows start 55ms apart; the phone summary line trails its row by 200ms."
+      },
+      {
+        "name": "flap-drum-steps",
+        "value": "4",
+        "purpose": "Glyphs shown on the way to a new character: 5 on the plate, 3 on the phone summary line, 1 on the clock."
+      },
+      {
+        "name": "hover",
+        "value": "150ms ease",
+        "purpose": "Text and fill color changes on hover."
+      },
+      {
+        "name": "lamp",
+        "value": "160ms ease",
+        "purpose": "A lamp filling at the moment an outcome is decided."
+      },
+      {
+        "name": "unit-dim",
+        "value": "180ms ease",
+        "purpose": "Other units dimming to 40% in the list (about a quarter on the map) while one is hovered or focused."
+      },
+      {
+        "name": "alert-pulse",
+        "value": "8 replay minutes, linear, once",
+        "purpose": "An alert ring contracts from a 31px to a 9px radius and fades from 100% to 35%; it never loops."
+      },
+      {
+        "name": "replay-rate",
+        "value": "6 or 18 replay minutes per second, linear",
+        "purpose": "Replay time, toggled by the speed key."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Flips show the final value at once, the replay opens on its final state without autoplay, and smooth scrolling is off."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "rail-narrow",
+        "value": "1180px",
+        "purpose": "max-width: rail 360px, small flap cells 12 by 20px, method in two columns."
+      },
+      {
+        "name": "stack",
+        "value": "900px",
+        "purpose": "max-width: the wall stacks (map, then rail), strip 52px, the board scrolls sideways, the nav keeps Replay, Standings and Code."
+      },
+      {
+        "name": "phone",
+        "value": "560px",
+        "purpose": "max-width: the question hides, the nav keeps Code, method in one column, medium flap cells 15 by 25px."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Play Key",
+      "kind": "button",
+      "refersTo": "play-key",
+      "description": "The only filled key: a warm-white circle that starts and pauses the replay. Never gold.",
+      "html": "<button type=\"button\" class=\"ds-play\" aria-pressed=\"false\" aria-label=\"Play the replay\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M4 2.5v11l9-5.5z\"/></svg></button>",
+      "css": ".ds-play{width:40px;height:40px;display:grid;place-items:center;padding:0;border:1px solid var(--rule, #26332f);border-radius:50%;background:var(--flap-ink, #f3efe2);color:var(--ground, #0b1110);cursor:pointer;transition:transform 140ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),background-color 150ms ease}.ds-play:hover{background:#fffaf0}.ds-play:active{transform:scale(0.94)}.ds-play:focus-visible{outline:2px solid var(--flap-ink, #f3efe2);outline-offset:2px}.ds-play svg{width:14px;height:14px;fill:currentColor}"
+    },
+    {
+      "name": "Rocker Switch",
+      "kind": "button",
+      "refersTo": "switch-key",
+      "description": "Mode and difficulty keys in a rocker group; the pressed key turns pressed slate with an ink bar, a disabled key goes dead gray.",
+      "html": "<div class=\"ds-switch\" role=\"group\" aria-label=\"Mode\"><button type=\"button\" aria-pressed=\"true\">Open book</button><button type=\"button\" aria-pressed=\"false\">Closed book</button><button type=\"button\" disabled title=\"Planned for v2; not run in this release\">Travel tool · v2</button></div>",
+      "css": ".ds-switch{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--rule, #26332f);border-radius:3px;background:var(--ground, #0b1110)}.ds-switch button{border:0;background:transparent;padding:5px 10px;border-radius:2px;font:600 12px/1 var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);letter-spacing:0.1em;text-transform:uppercase;color:var(--label, #8d9f98);cursor:pointer;transition:color 150ms ease,background-color 150ms ease,transform 120ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1))}.ds-switch button:hover{color:var(--ink, #ebe8de)}.ds-switch button:active{transform:scale(0.97)}.ds-switch button:focus-visible{outline:2px solid var(--flap-ink, #f3efe2);outline-offset:2px;border-radius:2px}.ds-switch button[aria-pressed=\"true\"]{background:var(--panel-2, #172120);color:var(--ink, #ebe8de);box-shadow:inset 0 -2px 0 var(--ink, #ebe8de)}.ds-switch button:disabled{color:#56675f;cursor:not-allowed}.ds-switch button:disabled:active{transform:none}"
+    },
+    {
+      "name": "Task Select",
+      "kind": "input",
+      "refersTo": "task-select",
+      "description": "The errand-day picker on the call ticket, named by an engraved label; pressed-slate field with a drawn chevron.",
+      "html": "<label class=\"ds-select-field\"><span class=\"ds-select-label\">Request</span><select class=\"ds-select\"><optgroup label=\"Hard\"><option>hard-010 · Thu · 6 errands</option></optgroup></select></label>",
+      "css": ".ds-select-field{display:inline-flex;align-items:center;gap:12px;padding:10px 18px;background:var(--panel, #111918)}.ds-select-label{font:600 12px/1 var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);letter-spacing:0.14em;text-transform:uppercase;color:var(--label, #8d9f98)}.ds-select{appearance:none;-webkit-appearance:none;background:var(--panel-2, #172120) url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238d9f98' stroke-width='1.5'/%3E%3C/svg%3E\") no-repeat right 9px center;border:1px solid var(--rule, #26332f);border-radius:3px;padding:5px 26px 5px 9px;font:400 13px/1.55 var(--ui, Barlow, \"Segoe UI\", system-ui, sans-serif);color:var(--ink, #ebe8de);max-width:240px;cursor:pointer}.ds-select:hover{border-color:var(--label, #8d9f98)}.ds-select:focus-visible{outline:2px solid var(--flap-ink, #f3efe2);outline-offset:2px}"
+    },
+    {
+      "name": "Top Strip Nav",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "The sticky strip: the question, the data stamp, and small-caps section links in sage gray that lift to ink on hover.",
+      "html": "<header class=\"ds-strip\"><p class=\"ds-strip-q\">Can LLMs ride Muni?</p><p class=\"ds-strip-stamp\">Final run · 30 tasks · v2026.10 · OSM 2026-09-18</p><nav class=\"ds-strip-nav\" aria-label=\"Sections\"><a href=\"#replay\">Replay</a><a href=\"#standings\">Standings</a><a href=\"#failures\">Failures</a><a href=\"#method\">Method</a><a href=\"#code\">Code</a></nav></header>",
+      "css": ".ds-strip{display:flex;align-items:center;gap:18px;height:56px;padding:0 var(--gutter, clamp(16px, 3vw, 40px));background:var(--ground, #0b1110);border-bottom:1px solid var(--rule, #26332f)}.ds-strip-q{margin:0;font:600 20px/1 var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);letter-spacing:0.01em;color:var(--ink, #ebe8de)}.ds-strip-stamp{margin:0;font:500 12px/1.2 var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);letter-spacing:0.1em;text-transform:uppercase;color:var(--label, #8d9f98);white-space:nowrap}.ds-strip-nav{margin-left:auto;display:flex;gap:22px}.ds-strip-nav a{font:600 13px/1 var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);letter-spacing:0.12em;text-transform:uppercase;color:var(--label, #8d9f98);text-decoration:none;padding:8px 0;transition:color 150ms ease}.ds-strip-nav a:hover{color:var(--ink, #ebe8de)}.ds-strip-nav a:focus-visible{outline:2px solid var(--flap-ink, #f3efe2);outline-offset:2px;border-radius:2px}"
+    },
+    {
+      "name": "Errand Chip",
+      "kind": "chip",
+      "refersTo": "errand-chip",
+      "description": "Read-only errands on the call ticket, outlined by an engraved rule, with a deadline in sage gray.",
+      "html": "<ul class=\"ds-chips\" aria-label=\"Errands\"><li><span>bakery</span><em>by 1:15 PM</em></li><li><span>bookstore</span><em>by 2:10 PM</em></li><li><span>bike shop</span></li><li><span>library</span></li></ul>",
+      "css": ".ds-chips{list-style:none;margin:0;padding:10px 18px;display:flex;flex-wrap:wrap;gap:6px;background:var(--panel, #111918);font-family:var(--ui, Barlow, \"Segoe UI\", system-ui, sans-serif);font-variant-numeric:tabular-nums}.ds-chips li{display:inline-flex;gap:6px;align-items:baseline;padding:2px 7px;border:1px solid var(--rule, #26332f);border-radius:3px;font-size:12.5px;color:var(--ink-2, #b9c1bb)}.ds-chips em{font-style:normal;font-size:12px;color:var(--label, #8d9f98)}"
+    },
+    {
+      "name": "Split-Flap Plate",
+      "kind": "custom",
+      "refersTo": "flap-cell-small",
+      "description": "The signature cell: two-tone leaves, a hairline split and warm-white capitals; six small cells spell the LLMUNI plate.",
+      "html": "<a class=\"ds-plate\" href=\"#replay\" aria-label=\"LLMuni, back to the replay\"><span class=\"ds-plate-run\" aria-hidden=\"true\"><span class=\"ds-plate-c\"><i><s>L</s></i><b><s>L</s></b></span><span class=\"ds-plate-c\"><i><s>L</s></i><b><s>L</s></b></span><span class=\"ds-plate-c\"><i><s>M</s></i><b><s>M</s></b></span><span class=\"ds-plate-c\"><i><s>U</s></i><b><s>U</s></b></span><span class=\"ds-plate-c\"><i><s>N</s></i><b><s>N</s></b></span><span class=\"ds-plate-c\"><i><s>I</s></i><b><s>I</s></b></span></span></a>",
+      "css": ".ds-plate{display:inline-flex;padding:12px;background:var(--ground, #0b1110);text-decoration:none}.ds-plate:focus-visible{outline:2px solid var(--flap-ink, #f3efe2);outline-offset:2px;border-radius:2px}.ds-plate-run{display:inline-flex;gap:2px}.ds-plate-c{--fh:23px;position:relative;display:inline-block;width:15px;height:var(--fh);font:600 17px/var(--fh) var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);color:var(--flap-ink, #f3efe2);border-radius:2px;box-shadow:0 1px 0 #000,0 2px 3px rgba(0,0,0,0.45)}.ds-plate-c i,.ds-plate-c b{position:absolute;left:0;right:0;height:50%;overflow:hidden;font:inherit}.ds-plate-c i{top:0;background:var(--flap-top, #242621);border-radius:2px 2px 0 0}.ds-plate-c b{bottom:0;background:var(--flap-bottom, #181a17);border-radius:0 0 2px 2px}.ds-plate-c s{position:absolute;left:0;right:0;height:var(--fh);text-align:center;text-decoration:none;translate:0 calc(var(--fh) * -0.09)}.ds-plate-c i s{top:0}.ds-plate-c b s{bottom:0}.ds-plate-c::after{content:\"\";position:absolute;left:0;right:0;top:calc(50% - 0.5px);height:1px;background:var(--flap-split, #060706);z-index:3}"
+    },
+    {
+      "name": "Departure Board Rows",
+      "kind": "custom",
+      "refersTo": "board-housing",
+      "description": "Standings as a split-flap departure board in its black housing: sage column heads, a unit swatch by the position, baselines at 62% with no rank.",
+      "html": "<div class=\"ds-board\"><table class=\"ds-board-t\"><thead><tr><th class=\"ds-board-l\" scope=\"col\">Pos</th><th class=\"ds-board-l\" scope=\"col\">Model</th><th scope=\"col\">Feasible</th><th scope=\"col\">Vs optimal</th></tr></thead><tbody><tr><td class=\"ds-board-pos\"><span class=\"ds-board-key\" style=\"--unit:#72c3f0\"></span><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>1</s></i><b><s>1</s></b></span></span><span class=\"ds-board-sr\">rank 1</span></td><td class=\"ds-board-l\"><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s>G</s></i><b><s>G</s></b></span><span class=\"ds-board-c\"><i><s>P</s></i><b><s>P</s></b></span><span class=\"ds-board-c\"><i><s>T</s></i><b><s>T</s></b></span><span class=\"ds-board-c\"><i><s>-</s></i><b><s>-</s></b></span><span class=\"ds-board-c\"><i><s>6</s></i><b><s>6</s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>A</s></i><b><s>A</s></b></span><span class=\"ds-board-c\"><i><s>S</s></i><b><s>S</s></b></span><span class=\"ds-board-c\"><i><s>T</s></i><b><s>T</s></b></span><span class=\"ds-board-c\"><i><s>R</s></i><b><s>R</s></b></span><span class=\"ds-board-c\"><i><s>A</s></i><b><s>A</s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span></span><span class=\"ds-board-sr\">GPT-6 Astra</span></td><td><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>9</s></i><b><s>9</s></b></span><span class=\"ds-board-c\"><i><s>6</s></i><b><s>6</s></b></span><span class=\"ds-board-c\"><i><s>%</s></i><b><s>%</s></b></span></span><span class=\"ds-board-sr\">96% feasible</span></td><td><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>+</s></i><b><s>+</s></b></span><span class=\"ds-board-c\"><i><s>1</s></i><b><s>1</s></b></span><span class=\"ds-board-c\"><i><s>.</s></i><b><s>.</s></b></span><span class=\"ds-board-c\"><i><s>8</s></i><b><s>8</s></b></span><span class=\"ds-board-c\"><i><s>%</s></i><b><s>%</s></b></span></span><span class=\"ds-board-sr\">median +1.8% slower than optimal</span></td></tr><tr><td class=\"ds-board-pos\"><span class=\"ds-board-key\" style=\"--unit:#a9afff\"></span><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>2</s></i><b><s>2</s></b></span></span><span class=\"ds-board-sr\">rank 2</span></td><td class=\"ds-board-l\"><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s>G</s></i><b><s>G</s></b></span><span class=\"ds-board-c\"><i><s>R</s></i><b><s>R</s></b></span><span class=\"ds-board-c\"><i><s>O</s></i><b><s>O</s></b></span><span class=\"ds-board-c\"><i><s>K</s></i><b><s>K</s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>4</s></i><b><s>4</s></b></span><span class=\"ds-board-c\"><i><s>.</s></i><b><s>.</s></b></span><span class=\"ds-board-c\"><i><s>7</s></i><b><s>7</s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span></span><span class=\"ds-board-sr\">Grok 4.7</span></td><td><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>9</s></i><b><s>9</s></b></span><span class=\"ds-board-c\"><i><s>6</s></i><b><s>6</s></b></span><span class=\"ds-board-c\"><i><s>%</s></i><b><s>%</s></b></span></span><span class=\"ds-board-sr\">96% feasible</span></td><td><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>+</s></i><b><s>+</s></b></span><span class=\"ds-board-c\"><i><s>7</s></i><b><s>7</s></b></span><span class=\"ds-board-c\"><i><s>.</s></i><b><s>.</s></b></span><span class=\"ds-board-c\"><i><s>0</s></i><b><s>0</s></b></span><span class=\"ds-board-c\"><i><s>%</s></i><b><s>%</s></b></span></span><span class=\"ds-board-sr\">median +7.0% slower than optimal</span></td></tr><tr class=\"ds-board-base\"><td class=\"ds-board-pos\"><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span></span><span class=\"ds-board-sr\">baseline</span></td><td class=\"ds-board-l\"><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s>G</s></i><b><s>G</s></b></span><span class=\"ds-board-c\"><i><s>R</s></i><b><s>R</s></b></span><span class=\"ds-board-c\"><i><s>E</s></i><b><s>E</s></b></span><span class=\"ds-board-c\"><i><s>E</s></i><b><s>E</s></b></span><span class=\"ds-board-c\"><i><s>D</s></i><b><s>D</s></b></span><span class=\"ds-board-c\"><i><s>Y</s></i><b><s>Y</s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>B</s></i><b><s>B</s></b></span><span class=\"ds-board-c\"><i><s>A</s></i><b><s>A</s></b></span><span class=\"ds-board-c\"><i><s>S</s></i><b><s>S</s></b></span><span class=\"ds-board-c\"><i><s>E</s></i><b><s>E</s></b></span><span class=\"ds-board-c\"><i><s>L</s></i><b><s>L</s></b></span><span class=\"ds-board-c\"><i><s>I</s></i><b><s>I</s></b></span><span class=\"ds-board-c\"><i><s>N</s></i><b><s>N</s></b></span><span class=\"ds-board-c\"><i><s>E</s></i><b><s>E</s></b></span><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span></span><span class=\"ds-board-sr\">Greedy baseline</span></td><td><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>7</s></i><b><s>7</s></b></span><span class=\"ds-board-c\"><i><s>0</s></i><b><s>0</s></b></span><span class=\"ds-board-c\"><i><s>%</s></i><b><s>%</s></b></span></span><span class=\"ds-board-sr\">70% feasible</span></td><td><span class=\"ds-board-run\" aria-hidden=\"true\"><span class=\"ds-board-c\"><i><s></s></i><b><s></s></b></span><span class=\"ds-board-c\"><i><s>+</s></i><b><s>+</s></b></span><span class=\"ds-board-c\"><i><s>8</s></i><b><s>8</s></b></span><span class=\"ds-board-c\"><i><s>.</s></i><b><s>.</s></b></span><span class=\"ds-board-c\"><i><s>5</s></i><b><s>5</s></b></span><span class=\"ds-board-c\"><i><s>%</s></i><b><s>%</s></b></span></span><span class=\"ds-board-sr\">median +8.5% slower than optimal</span></td></tr></tbody></table></div>",
+      "css": ".ds-board{position:relative;display:inline-block;padding:18px 18px 14px;background:#080c0b;border:1px solid var(--rule, #26332f);border-radius:4px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 16px 40px rgba(0,0,0,0.35)}.ds-board-t{border-collapse:separate;border-spacing:0}.ds-board-t th{padding:0 10px 10px 0;font:600 11.5px/1.15 var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);letter-spacing:0.12em;text-transform:uppercase;color:var(--label, #8d9f98);text-align:right;vertical-align:bottom;white-space:nowrap}.ds-board-t td{padding:4px 10px 4px 0;text-align:right;white-space:nowrap}.ds-board-t .ds-board-l{text-align:left}.ds-board-t th:last-child,.ds-board-t td:last-child{padding-right:0}.ds-board-t td.ds-board-pos{position:relative;padding-left:14px;text-align:left}.ds-board-key{position:absolute;left:0;top:50%;width:9px;height:4px;margin-top:-2px;border-radius:1px;background:var(--unit)}.ds-board-base td{opacity:0.62}.ds-board-run{display:inline-flex;gap:2px;vertical-align:middle}.ds-board-sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.ds-board-c{--fh:30px;position:relative;display:inline-block;width:18px;height:var(--fh);font:600 22px/var(--fh) var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);color:var(--flap-ink, #f3efe2);border-radius:2px;box-shadow:0 1px 0 #000,0 2px 3px rgba(0,0,0,0.45)}.ds-board-c i,.ds-board-c b{position:absolute;left:0;right:0;height:50%;overflow:hidden;font:inherit}.ds-board-c i{top:0;background:var(--flap-top, #242621);border-radius:2px 2px 0 0}.ds-board-c b{bottom:0;background:var(--flap-bottom, #181a17);border-radius:0 0 2px 2px}.ds-board-c s{position:absolute;left:0;right:0;height:var(--fh);text-align:center;text-decoration:none;translate:0 calc(var(--fh) * -0.09)}.ds-board-c i s{top:0}.ds-board-c b s{bottom:0}.ds-board-c::after{content:\"\";position:absolute;left:0;right:0;top:calc(50% - 0.5px);height:1px;background:var(--flap-split, #060706);z-index:3}"
+    },
+    {
+      "name": "Unit Rows and Lamps",
+      "kind": "custom",
+      "refersTo": "unit-swatch",
+      "description": "Replay units in the rail: swatch, name, readout result and a status lamp (ring while open, then gold, sage, red or unlit); hover or focus dims the others.",
+      "html": "<ol class=\"ds-units\"><li class=\"ds-unit ds-unit-optimal\" style=\"--unit:#f0a500\" data-lamp=\"gold\" tabindex=\"0\"><span class=\"ds-unit-swatch\" aria-hidden=\"true\"></span><span class=\"ds-unit-name\">Optimal plan</span><span class=\"ds-unit-result\">1:59 PM</span><span class=\"ds-unit-lamp\" aria-hidden=\"true\"></span><span class=\"ds-unit-state\">arrived 1:59 PM</span></li><li class=\"ds-unit\" style=\"--unit:#54d1bd\" data-lamp=\"ok\" tabindex=\"0\"><span class=\"ds-unit-swatch\" aria-hidden=\"true\"></span><span class=\"ds-unit-name\">Gemini 3.1 Pro</span><span class=\"ds-unit-result\">2:05 PM <small>+3.7%</small></span><span class=\"ds-unit-lamp\" aria-hidden=\"true\"></span><span class=\"ds-unit-state\">arrived 2:05 PM</span></li><li class=\"ds-unit\" style=\"--unit:#72c3f0\" data-lamp=\"bad\" tabindex=\"0\"><span class=\"ds-unit-swatch\" aria-hidden=\"true\"></span><span class=\"ds-unit-name\">GPT-6 Astra</span><span class=\"ds-unit-result\"><span class=\"ds-bad\">Late</span></span><span class=\"ds-unit-lamp\" aria-hidden=\"true\"></span><span class=\"ds-unit-state\">arrived 2:17 PM, 2 min late</span></li><li class=\"ds-unit\" style=\"--unit:#9ad36a\" data-lamp=\"live\" tabindex=\"0\"><span class=\"ds-unit-swatch\" aria-hidden=\"true\"></span><span class=\"ds-unit-name\">Qwen 3.8 Max</span><span class=\"ds-unit-result\"><span class=\"ds-bad\">Missed a deadline</span></span><span class=\"ds-unit-lamp\" aria-hidden=\"true\"></span><span class=\"ds-unit-state\">en route to Harvest Wheat Field Bakery</span></li></ol>",
+      "css": ".ds-units{list-style:none;margin:0;padding:6px 18px;width:368px;background:var(--panel, #111918);font-family:var(--ui, Barlow, \"Segoe UI\", system-ui, sans-serif);color:var(--ink, #ebe8de);font-variant-numeric:tabular-nums}.ds-unit{display:grid;grid-template-columns:12px minmax(0,1fr) auto 10px;grid-template-areas:\"sw name result lamp\" \". state state state\";align-items:center;column-gap:10px;padding:4px 4px 3px;border-bottom:1px solid var(--rule-2, #1b2624);outline-offset:-2px;transition:opacity 180ms ease}.ds-unit:last-child{border-bottom:0}.ds-unit:focus-visible{outline:2px solid var(--flap-ink, #f3efe2)}.ds-unit-swatch{grid-area:sw;width:12px;height:4px;border-radius:1px;background:var(--unit)}.ds-unit-optimal .ds-unit-swatch{height:6px}.ds-unit-name{grid-area:name;font-weight:600;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ds-unit-optimal .ds-unit-name{color:var(--gold, #f0a500)}.ds-unit-result{grid-area:result;font:600 14px/1.3 var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);letter-spacing:0.03em;text-align:right;white-space:nowrap}.ds-unit-result small{font:500 12px var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);color:var(--label, #8d9f98);margin-left:4px}.ds-unit-result .ds-bad{color:#ff8f8a}.ds-unit-lamp{grid-area:lamp;width:9px;height:9px;border-radius:50%;box-sizing:border-box;border:1.5px solid var(--label, #8d9f98);transition:background-color 160ms ease,border-color 160ms ease}.ds-unit[data-lamp=\"gold\"] .ds-unit-lamp{background:var(--gold, #f0a500);border-color:var(--gold, #f0a500)}.ds-unit[data-lamp=\"ok\"] .ds-unit-lamp{background:var(--ok, #8fcf9c);border-color:var(--ok, #8fcf9c)}.ds-unit[data-lamp=\"bad\"] .ds-unit-lamp{background:var(--alert, #e5484d);border-color:var(--alert, #e5484d)}.ds-unit[data-lamp=\"off\"] .ds-unit-lamp{background:#5d6c67;border-color:#5d6c67}.ds-unit-state{grid-area:state;font-size:12px;line-height:1.3;color:var(--label, #8d9f98);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ds-unit:hover .ds-unit-state,.ds-unit:focus-visible .ds-unit-state{white-space:normal}.ds-units:has(.ds-unit:hover,.ds-unit:focus-visible) .ds-unit:not(:hover):not(:focus-visible):not(.ds-unit-optimal){opacity:0.4}"
+    },
+    {
+      "name": "Paged Alert",
+      "kind": "custom",
+      "refersTo": "alert-tag",
+      "description": "A failure paging in on the map: alert-red dot, a ring that contracts once (hover to replay it at 1x), and a condensed bold tag on the alert plate.",
+      "html": "<div class=\"ds-alert\" role=\"img\" aria-label=\"Qwen 3.8 Max missed a deadline\"><span class=\"ds-alert-mark\"><span class=\"ds-alert-ring\"></span><span class=\"ds-alert-dot\"></span></span><span class=\"ds-alert-tag\">QWEN 3.8 MAX · MISSED DEADLINE</span></div>",
+      "css": ".ds-alert{position:relative;display:inline-block;width:340px;height:96px;background:var(--ground, #0b1110)}.ds-alert-mark{position:absolute;left:40px;top:30px;width:0;height:0}.ds-alert-dot{position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;background:var(--alert, #e5484d)}.ds-alert-ring{position:absolute;left:-9px;top:-9px;width:18px;height:18px;box-sizing:border-box;border-radius:50%;border:2px solid rgba(229,72,77,0.35)}.ds-alert-tag{position:absolute;left:52px;top:46px;padding:3px 6px;background:rgba(150,32,36,0.92);color:#ffecea;font:700 16px/1 var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);white-space:nowrap}.ds-alert:hover .ds-alert-ring{animation:ds-alert-page 1333ms linear 1}@keyframes ds-alert-page{from{left:-31px;top:-31px;width:62px;height:62px;border-color:rgba(229,72,77,1)}to{left:-9px;top:-9px;width:18px;height:18px;border-color:rgba(229,72,77,0.35)}}@media (prefers-reduced-motion: reduce){.ds-alert:hover .ds-alert-ring{animation:none}}"
+    },
+    {
+      "name": "Failure Bars",
+      "kind": "custom",
+      "refersTo": "failure-bar",
+      "description": "How plans fail: one 100% bar per model in failure-kind fills (works, closed, late, wrong address, invented, unverifiable, hatched no-plan), with the working count.",
+      "html": "<div class=\"ds-fail\" role=\"list\"><div class=\"ds-fail-row\" role=\"listitem\"><span class=\"ds-fail-name\"><span class=\"ds-fail-swatch\" style=\"--unit:#5b8cff\"></span>DeepSeek V4 Pro</span><span class=\"ds-fail-bar\" role=\"img\" aria-label=\"16 of 27: Works on the timetable; 1 of 27: Arrives at a closed store; 3 of 27: Misses a deadline or the meet-up; 7 of 27: No plan (declined, invalid answer)\"><span class=\"ds-seg ds-seg-feasible\" style=\"flex:16\"></span><span class=\"ds-seg ds-seg-closed\" style=\"flex:1\"></span><span class=\"ds-seg ds-seg-late\" style=\"flex:3\"></span><span class=\"ds-seg ds-seg-none\" style=\"flex:7\"></span></span><span class=\"ds-fail-count\">16/27</span></div><div class=\"ds-fail-row\" role=\"listitem\"><span class=\"ds-fail-name\"><span class=\"ds-fail-swatch\" style=\"--unit:#cdb9a0\"></span>Llama 4 Maverick</span><span class=\"ds-fail-bar\" role=\"img\" aria-label=\"15 of 27: Works on the timetable; 3 of 27: Arrives at a closed store; 9 of 27: Misses a deadline or the meet-up\"><span class=\"ds-seg ds-seg-feasible\" style=\"flex:15\"></span><span class=\"ds-seg ds-seg-closed\" style=\"flex:3\"></span><span class=\"ds-seg ds-seg-late\" style=\"flex:9\"></span></span><span class=\"ds-fail-count\">15/27</span></div></div>",
+      "css": ".ds-fail{display:grid;gap:10px;width:640px;padding:16px 18px;background:var(--ground, #0b1110);font-family:var(--ui, Barlow, \"Segoe UI\", system-ui, sans-serif);color:var(--ink, #ebe8de)}.ds-fail-row{display:grid;grid-template-columns:190px minmax(0,1fr) 52px;align-items:center;gap:16px}.ds-fail-name{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;white-space:nowrap}.ds-fail-swatch{width:12px;height:4px;border-radius:1px;background:var(--unit);flex:none}.ds-fail-bar{display:flex;height:18px;gap:2px}.ds-seg{min-width:3px;border-radius:1px}.ds-seg-feasible{background:var(--ok, #8fcf9c)}.ds-seg-closed{background:var(--alert, #e5484d)}.ds-seg-late{background:#f29d93}.ds-seg-wrong{background:#b39cff}.ds-seg-invented{background:#6f52d9}.ds-seg-unverifiable{background:#5d6c67}.ds-seg-none{background:repeating-linear-gradient(135deg,#3a4744 0 2px,#1a2321 2px 6px)}.ds-fail-count{font:600 15px/1 var(--signage, \"Barlow Condensed\", \"Arial Narrow\", sans-serif);color:var(--ink-2, #b9c1bb);text-align:right}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Dispatch Console",
+    "overview": "LLMuni is a dispatch floor at night. San Francisco is the wall: a full-bleed 3D map drawn in the console's own slate, where each model is a unit sent across the city on its own clock, the provably optimal plan runs in gold, and failures page in as alerts. Around the wall sits the equipment: matte control-room slate with a green-black cast (never blue), engraved 1px hairlines, sage-gray small-caps labels, and a split-flap board of real cells, lettered in Barlow Condensed like California transit signage.\n\nThe system is dense and exact, closer to an instrument panel than to a marketing page. Color is scarce and each color carries one meaning: gold is the optimal plan, red is a failure, sage is done, unlit gray is can't be checked, and seven unit colors kept clear of gold and red tell the models apart. Controls are neutral keys in rocker groups; the only filled key is the warm-white Play. Motion is mechanical: replay time runs linear, flaps drop fast and staggered by column, alerts pulse once and never loop, and reduced motion swaps every flip for its final value.\n\nThe world refuses the category default of a white leaderboard table over a hero-metric row, and it has no glow and no glass. The Remotion video (video/src/lib/theme.ts, video/src/lib/Flap.tsx) is a second surface of the same system: the same palette, the same two faces, the same flap cell.",
+    "keyCharacteristics": [
+      "Matte green-black slate, with groups divided by engraved 1px hairlines instead of boxes.",
+      "Lamp colors with fixed meanings: gold optimal, red failed, sage done, gray unverifiable.",
+      "Real split-flap cells for the headline, the standings, the replay clock and the plate.",
+      "One family in two widths: Barlow Condensed for signage, Barlow for reading, tabular numerals throughout.",
+      "A full-bleed 3D map wall with panels hung on it.",
+      "Mechanical motion: linear time, fast staggered flips, single alert pulses.",
+      "Small physical corners (4px at most); no glow, no glass."
+    ],
+    "rules": [
+      {
+        "name": "The One Meaning Rule",
+        "body": "Gold is the provably optimal plan and nothing else; red is a failure and nothing else. In lamps and bars, sage always means done and unlit gray always means can't be checked.",
+        "section": "colors"
+      },
+      {
+        "name": "The Separate Channels Rule",
+        "body": "The seven unit colors only identify models: a model's route, its moving head and the swatch beside its name. They never fill a bar, a lamp or a word, and no lamp or failure color ever draws a model's route.",
+        "section": "colors"
+      },
+      {
+        "name": "The Alert Ink Rule",
+        "body": "Red words are set in alert ink; alert red is for marks: lamps, dots, rings and bar fills.",
+        "section": "colors"
+      },
+      {
+        "name": "The Signage Rule",
+        "body": "Barlow Condensed is the console's signage: titles, labels, keys, column heads, readouts, flap characters and map tags. Barlow carries everything read as prose: sentences, definitions, names, states and notes.",
+        "section": "typography"
+      },
+      {
+        "name": "The Engraved Label Rule",
+        "body": "Labels are condensed small caps in sage gray, tracked 0.1 to 0.14em. A label names a panel, a control group or a column; it never sits above a heading as a kicker.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every numeral is tabular, so clocks, percentages and costs hold their columns while the replay runs and the board flips.",
+        "section": "typography"
+      },
+      {
+        "name": "The Mounted Panel Rule",
+        "body": "Only mounted things cast shadows: wall panels, flap-board housings and flap cells. Everything else is flat and divided by hairlines.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No Glow, No Glass Rule",
+        "body": "Nothing blurs what is behind it and no color glows; panels on the map stay near-opaque (the rail is 96%). The only halo is dark, behind text on the map.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Lamp And Swatch Rule",
+        "body": "A circle is a lamp, the Play key or a point on the map; a model's swatch is a short bar that echoes its route.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Real Flap Rule",
+        "body": "A split-flap value is always real cells, with two-tone halves, a hairline split and warm-white characters that flip through the drum; never a font imitation or an image.",
+        "section": "components"
+      },
+      {
+        "name": "The Linear Time Rule",
+        "body": "Replay time runs linear, at 6 or 18 replay minutes per second; flaps are fast and mechanical, staggered by column; alerts pulse once and never loop. Under reduced motion, flips land at once and the replay opens on its final state instead of playing.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do reserve gold (#f0a500) for the provably optimal plan: its 5px route above every model, its name, its swatch and its lamp.",
+      "Do mark failure in red only: alert red (#e5484d) for lamps, dots, rings and closed-store fills; alert ink (#ff8f8a) for failure words.",
+      "Do post headline measurements, the standings and the replay clock in real flap cells, each value with a plain-text twin for screen readers.",
+      "Do name panels, control groups and columns with engraved labels: Barlow Condensed 600, uppercase, tracked 0.1 to 0.14em, in sage gray (#8d9f98).",
+      "Do divide groups with 1px hairlines (#26332f between panels and sections, #1b2624 inside them) instead of boxes.",
+      "Do hang panels on the map wall at a 20px inset with the wall-mount shadow, and frame the camera so the routes stay clear of them.",
+      "Do theme every browser surface from the palette: a 2px flap-ink focus ring at a 2px offset, a done-sage selection at 32%, slate scrollbars, underlines in sage gray at a 3px offset, tabular numerals.",
+      "Do assign the seven unit colors in the run's model order, and draw baselines without color."
+    ],
+    "donts": [
+      "Don't use gold or red for a control, link, heading, focus ring or decoration.",
+      "Don't show the standings or the headline as a light table or a big-number stat row; they belong on flap boards in dark housings.",
+      "Don't put an engraved label above a heading as a kicker; a section title stands alone, with its caption beneath.",
+      "Don't add glow or glass: no backdrop blur and no colored halos.",
+      "Don't fill a key with color: a pressed key is pressed slate with an ink bar, and the only filled key is the warm-white Play.",
+      "Don't loop an alert pulse or add ambient motion; the console moves when replay time runs, a value changes or a key is pressed.",
+      "Don't round a panel, housing, switch key or flap cell past 4px.",
+      "Don't borrow SFMTA, Muni or BART marks or official styling; LLMuni is independent research."
+    ]
+  }
+}

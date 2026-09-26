@@ -43,7 +43,7 @@ a:hover { text-decoration-color: var(--ink); }
 h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; }
 button { font: inherit; color: inherit; }
-input, select { font: inherit; color: inherit; caret-color: var(--gold); }
+input, select { font: inherit; color: inherit; caret-color: var(--flap-ink); }
 [hidden] { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .skip { position: absolute; left: 12px; top: -48px; z-index: 50; padding: 8px 12px; background: var(--flap-ink); color: var(--ground); font-weight: 600; }
@@ -372,7 +372,7 @@ h2 {
 .board .key { position: absolute; left: 0; top: 50%; width: 9px; height: 4px; margin-top: -2px; border-radius: 1px; background: var(--unit); }
 .board .mline { display: none; }
 .board tr.is-baseline td { opacity: 0.62; }
-.board tr.is-baseline:first-of-type td { padding-top: 12px; }
+.board tr.first-baseline td { padding-top: 12px; }
 .board th.col-cost, .board td.col-cost { padding-right: 0; }
 
 .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px 32px; margin: 28px 0 0; }
