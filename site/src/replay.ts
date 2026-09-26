@@ -226,6 +226,8 @@ export class Replay {
       ...(this.task.end ? [{ at: this.task.end.at, label: this.task.end.arrive_by != null ? `MEET BY ${clock(this.task.end.arrive_by)}` : "END" }] : []),
     ];
     this.overlay.setProps({
+      // Labels, alerts and markers draw over the routes: at this pitch the depth test would otherwise sort a label
+      // hung below its point behind the arcs.
       layers: [
         new TripsLayer<Unit>({
           id: "routes", data: visible.filter((u) => !u.optimal),
@@ -245,21 +247,21 @@ export class Replay {
           getFillColor: [11, 17, 16], getLineColor: [233, 230, 220], lineWidthUnits: "pixels", getLineWidth: 2, stroked: true,
         }),
         new TextLayer({
-          id: "place-labels", data: places, getPosition: (d) => d.at, getText: (d) => d.label, getSize: 14,
+          id: "place-labels", data: places, parameters: { depthCompare: "always", depthWriteEnabled: false },  getPosition: (d) => d.at, getText: (d) => d.label, getSize: 14,
           getColor: [233, 230, 220], getTextAnchor: (d) => side(d.at), getPixelOffset: (d) => [side(d.at) === "start" ? 10 : -10, -12],
           fontFamily: "Barlow Condensed, sans-serif", fontWeight: 600, updateTriggers: { getTextAnchor: [t], getPixelOffset: [t] },
           outlineWidth: 3, outlineColor: [11, 17, 16, 255], fontSettings: { sdf: true }, characterSet: "auto",
         }),
         new ScatterplotLayer({
-          id: "alert-rings", data: live, getPosition: (a) => a.at, radiusUnits: "pixels", stroked: true, filled: false,
+          id: "alert-rings", data: live, parameters: { depthCompare: "always", depthWriteEnabled: false },  getPosition: (a) => a.at, radiusUnits: "pixels", stroked: true, filled: false,
           getRadius: (a) => 9 + 22 * Math.max(0, 1 - (t - a.time) / 8), getLineColor: (a) => [...ALERT, Math.round(90 + 165 * Math.max(0, 1 - (t - a.time) / 8))],
           lineWidthUnits: "pixels", getLineWidth: 2, updateTriggers: { getRadius: [t], getLineColor: [t] },
         }),
         new ScatterplotLayer({
-          id: "alert-dots", data: live, getPosition: (a) => a.at, getRadius: 6, radiusUnits: "pixels", getFillColor: ALERT,
+          id: "alert-dots", data: live, parameters: { depthCompare: "always", depthWriteEnabled: false },  getPosition: (a) => a.at, getRadius: 6, radiusUnits: "pixels", getFillColor: ALERT,
         }),
         new TextLayer<Alert>({
-          id: "alert-labels", data: live, getPosition: (a) => a.at, getText: (a) => a.label, getSize: 16,
+          id: "alert-labels", data: live, parameters: { depthCompare: "always", depthWriteEnabled: false },  getPosition: (a) => a.at, getText: (a) => a.label, getSize: 16,
           getColor: [255, 236, 234], getPixelOffset: (a) => [side(a.at) === "start" ? 12 : -12, a.atEnd ? -12 - 25 * a.stack : 16 + 25 * a.stack],
           getAlignmentBaseline: (a) => (a.atEnd ? "bottom" : "top"),
           fontFamily: "Barlow Condensed, sans-serif", fontWeight: 700, characterSet: "auto", background: true,
