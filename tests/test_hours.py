@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from llmuni.hours import open_intervals, parse_hours, weekly_summary
+from llmuni import hours
+from llmuni.hours import hours_status, open_intervals, parse_hours, weekly_summary
 
 MON = datetime(2026, 10, 5)  # reference week starts Monday 2026-10-05
 
@@ -42,7 +43,21 @@ def test_sunset_depends_on_location():
     assert datetime(2026, 10, 5, 18, 30) <= end <= datetime(2026, 10, 5, 19, 0)
 
 
-def test_unknown_state_counts_as_closed():
+def test_unknown_periods_are_reported_separately_from_open_time():
     week = weekly_summary(parse_hours("Mo-Fr 09:00-17:00; Sa 10:00-14:00 unknown"), MON)
     assert week["open_hours"] == 40.0
     assert week["unknown_hours"] == 4.0
+
+
+def test_hours_status_classes():
+    def status(expr):
+        oh = parse_hours(expr)
+        week = weekly_summary(oh, MON) if oh else {"open_hours": 0.0, "unknown_hours": 0.0, "open_days": 0}
+        return hours_status(expr, oh, week)
+
+    assert status(None) == hours.MISSING
+    assert status("Mo-Fr 9-5pm") == hours.UNPARSEABLE
+    assert status("Mo-Fr 09:00-17:00; Sa 10:00-14:00 unknown") == hours.UNKNOWN
+    assert status("closed") == hours.CLOSED_ALL_WEEK
+    assert status("Mo-Fr 09:00-17:00") == hours.VALID
+    assert hours.VERIFIABLE == {hours.VALID, hours.CLOSED_ALL_WEEK}

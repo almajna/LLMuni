@@ -15,6 +15,7 @@ def main(argv: list[str] | None = None) -> None:
 
     data = stages.add_parser("data", help="fetch GTFS + OSM, write MANIFEST.json, build POIs and the Phase 1 report")
     data.add_argument("--refresh", action="store_true", help="re-download sources even if cached")
+    stages.add_parser("router-check", help="route known SF trips with R5 and measure matrix throughput")
 
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", datefmt="%H:%M:%S")
@@ -24,3 +25,7 @@ def main(argv: list[str] | None = None) -> None:
         from llmuni.data.pipeline import run_data_stage
 
         run_data_stage(cfg, refresh=args.refresh)
+    elif args.stage == "router-check":
+        from llmuni.router_check import run_router_check
+
+        run_router_check(cfg)

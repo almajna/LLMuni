@@ -19,7 +19,24 @@ ROAD_CLASSES = ("motorway", "trunk", "primary", "secondary", "tertiary", "reside
 
 def classify(tags: dict[str, str], categories: dict[str, CategorySpec]) -> list[str]:
     """Names of the errand categories whose tag rules match these tags."""
-    return [name for name, spec in categories.items() if any(tags.get(k) in vals for k, vals in spec.tags.items())]
+    return [name for name, spec in categories.items() if _matches(tags, spec)]
+
+
+def _matches(tags: dict[str, str], spec: CategorySpec) -> bool:
+    if any(tags.get(k) in vals for k, vals in spec.tags.items()):
+        return True
+    branded = spec.branded_tags
+    if branded and any(tags.get(k) in vals for k, vals in branded.tags.items()):
+        text = " ".join(tags.get(k, "") for k in ("name", "brand", "operator")).lower()
+        return any(brand in text for brand in branded.brands)
+    return False
+
+
+def _filter_pairs(categories: dict[str, CategorySpec]) -> list[tuple[str, str]]:
+    """Every (key, value) any category could match, for pyosmium's tag filter."""
+    rules = [spec.tags for spec in categories.values()]
+    rules += [spec.branded_tags.tags for spec in categories.values() if spec.branded_tags]
+    return sorted({(k, v) for rule in rules for k, vals in rule.items() for v in vals})
 
 
 def display_name(tags: dict[str, str]) -> str | None:
@@ -53,7 +70,7 @@ def format_address(tags: dict[str, str]) -> str | None:
 def extract_pois(pbf: Path, categories: dict[str, CategorySpec]) -> pd.DataFrame:
     """One row per (OSM object, matching category). Nodes use their location; buildings and
     other areas use a point guaranteed to lie inside the polygon."""
-    pairs = sorted({(k, v) for spec in categories.values() for k, vals in spec.tags.items() for v in vals})
+    pairs = _filter_pairs(categories)
     wkb = osmium.geom.WKBFactory()
     rows, broken = [], 0
     objects = (
@@ -114,6 +131,37 @@ def extract_roads(pbf: Path) -> list[tuple[str, list[tuple[float, float]]]]:
             except osmium.InvalidLocationError:
                 continue
     return roads
+
+
+def intersection_points(pbf: Path, pairs: list[tuple[str, str]], max_spread_m: float = 150) -> dict:
+    """(lat, lon) where two named streets meet: the mean of the nodes both streets share.
+    Returns None for pairs that never meet (or meet in places farther apart than max_spread_m)."""
+    names = {name for pair in pairs for name in pair}
+    street_nodes: dict[str, set[int]] = {name: set() for name in names}
+    locations: dict[int, tuple[float, float]] = {}
+    objects = osmium.FileProcessor(str(pbf)).with_locations().with_filter(osmium.filter.KeyFilter("highway"))
+    for obj in objects:
+        if obj.is_way() and obj.tags.get("name") in names:
+            for node in obj.nodes:
+                try:
+                    locations[node.ref] = (node.lat, node.lon)
+                except osmium.InvalidLocationError:
+                    continue
+                street_nodes[obj.tags["name"]].add(node.ref)
+    points = {}
+    for a, b in pairs:
+        shared = [locations[n] for n in street_nodes[a] & street_nodes[b]]
+        if not shared:
+            points[(a, b)] = None
+            continue
+        lat, lon = (sum(c) / len(shared) for c in zip(*shared))
+        spread = max(abs(p[0] - lat) * 111_000 + abs(p[1] - lon) * 88_000 for p in shared)
+        if spread > max_spread_m:
+            log.warning("%s and %s meet in several places (spread %.0f m)", a, b, spread)
+            points[(a, b)] = None
+        else:
+            points[(a, b)] = (lat, lon)
+    return points
 
 
 def snapshot_timestamp(pbf: Path) -> str | None:

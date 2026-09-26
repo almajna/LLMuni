@@ -130,9 +130,9 @@
   },
   "pois": {
     "file": "data/processed/pois.parquet",
-    "sha256": "be96e1ed0a95e8f0358100a439cec2f073862272927506016e519dd607c9c872",
-    "rows": 1933,
-    "rows_with_valid_hours": 945,
+    "sha256": "3d7f8ec559f120e135d7b7d9f7832eb16b6fa230388c2ed78e0227a93382da9f",
+    "rows": 1930,
+    "rows_with_valid_hours": 943,
     "categories_kept": [
       "pharmacy",
       "post_office",

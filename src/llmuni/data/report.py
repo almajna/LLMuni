@@ -36,10 +36,12 @@ def label(category: str) -> str:
 
 def coverage_table(pois: pd.DataFrame, min_valid: int, order: list[str]) -> pd.DataFrame:
     g = pois.groupby("category")
+    status = pois["hours_status"]
     table = pd.DataFrame({
         "pois": g.size(),
         "with_hours_tag": g["opening_hours"].count(),
-        "parseable": g["hours_parsed"].sum(),
+        "parseable": (~status.isin(["missing", "unparseable"])).groupby(pois["category"]).sum(),
+        "unknown": (status == "unknown").groupby(pois["category"]).sum(),
         "valid": g["valid_hours"].sum(),
     }).reindex(order, fill_value=0).astype(int)
     table["pct_valid"] = (100 * table["valid"] / table["pois"].where(table["pois"] > 0)).round(1).fillna(0.0)
@@ -62,20 +64,23 @@ def _coverage_markdown(pois: pd.DataFrame, coverage: pd.DataFrame, caption: str)
         caption,
         "",
         "POIs are named, publicly accessible OSM features inside the San Francisco boundary, de-duplicated.",
-        "*Valid* means the `opening_hours` tag parses and the place is open at least once in the reference week.",
+        "*Valid* means the hours parse, have no `unknown` periods, and open at least once in the reference week;",
+        "only valid places become task candidates. *Unknown* places parse but contain `unknown` periods.",
         "",
-        "| Category | POIs | Hours tagged | Parseable | Valid | % valid | Kept |",
-        "|---|---:|---:|---:|---:|---:|:---:|",
+        "| Category | POIs | Hours tagged | Parseable | Unknown | Valid | % valid | Kept |",
+        "|---|---:|---:|---:|---:|---:|---:|:---:|",
     ]
     for cat, r in coverage.iterrows():
         kept = "yes" if r["kept"] else "**no**"
         lines.append(
-            f"| {label(cat)} | {r['pois']} | {r['with_hours_tag']} | {r['parseable']} | {r['valid']} | {r['pct_valid']:.1f} | {kept} |"
+            f"| {label(cat)} | {r['pois']} | {r['with_hours_tag']} | {r['parseable']} | {r['unknown']} | {r['valid']} "
+            f"| {r['pct_valid']:.1f} | {kept} |"
         )
-    total = coverage[["pois", "with_hours_tag", "parseable", "valid"]].sum()
+    total = coverage[["pois", "with_hours_tag", "parseable", "unknown", "valid"]].sum()
     pct = 100 * total["valid"] / max(total["pois"], 1)
     lines.append(
-        f"| **All** | {total['pois']} | {total['with_hours_tag']} | {total['parseable']} | {total['valid']} | {pct:.1f} | |"
+        f"| **All** | {total['pois']} | {total['with_hours_tag']} | {total['parseable']} | {total['unknown']} "
+        f"| {total['valid']} | {pct:.1f} | |"
     )
     brands = pois[(pois["category"] == "supermarket") & pois["valid_hours"]]["brand"].value_counts()
     if len(brands):
@@ -123,7 +128,7 @@ def plot_poi_map(pois: pd.DataFrame, coverage: pd.DataFrame, roads, sf_geom, cap
     fig.text(0.015, 1 - 0.68 / height, caption, fontsize=9.5, color=INK_2, va="top")
     handles = [
         Line2D([], [], marker="o", linestyle="", markersize=6, markerfacecolor=SERIES, markeredgecolor=SURFACE, label="Valid opening hours"),
-        Line2D([], [], marker="o", linestyle="", markersize=4, markerfacecolor=MUTED, markeredgecolor=MUTED, label="Missing or unparseable hours"),
+        Line2D([], [], marker="o", linestyle="", markersize=4, markerfacecolor=MUTED, markeredgecolor=MUTED, label="Hours missing, unparseable or unknown"),
     ]
     fig.legend(
         handles=handles, loc="upper right", bbox_to_anchor=(0.985, 1 - 0.22 / height), frameon=False,

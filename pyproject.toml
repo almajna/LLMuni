@@ -41,4 +41,5 @@ packages = ["src/llmuni"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q -m 'not router'"
+markers = ["router: slow integration tests that build the R5 transport network (make test-router)"]

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import yaml
@@ -22,10 +22,18 @@ class Source(BaseModel):
     label: str | None = None
 
 
+class BrandedTags(BaseModel):
+    """Tags that qualify only for the listed brands (lowercase substrings of name/brand/operator)."""
+
+    tags: dict[str, list[str]]
+    brands: list[str]
+
+
 class CategorySpec(BaseModel):
     """OSM tag rules for one errand category."""
 
     tags: dict[str, list[str]]
+    branded_tags: BrandedTags | None = None
     hours_keys: list[str] = Field(default_factory=lambda: ["opening_hours"])
     brands: dict[str, list[str]] = Field(default_factory=dict)
 
@@ -46,6 +54,16 @@ class DataConfig(BaseModel):
         return v
 
 
+class RouterConfig(BaseModel):
+    java_home: Path | None = None  # relative to the repo root
+    walk_speed_mps: float
+    max_trip_minutes: int
+    max_walk_minutes: int
+    departure_step_min: int
+    threads: int
+    sanity_departure: datetime
+
+
 class Config(BaseModel):
     project: str
     benchmark_version: str
@@ -54,6 +72,7 @@ class Config(BaseModel):
     root: Path
     paths: Paths
     data: DataConfig
+    router: RouterConfig
     categories: dict[str, CategorySpec]
 
     def rel(self, path: Path) -> str:

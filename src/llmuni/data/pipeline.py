@@ -100,15 +100,15 @@ def dedupe(df: pd.DataFrame, radius_m: float) -> pd.DataFrame:
 
 
 def add_hours(df: pd.DataFrame, week_start: datetime) -> pd.DataFrame:
-    """Parse opening hours and summarize them over the reference week.
-    valid_hours = parseable and open at least once during the week."""
+    """Parse opening hours, summarize them over the reference week, and classify them
+    (hours.hours_status). valid_hours marks the places eligible as task candidates."""
     stats = []
     for expr, lat, lon in zip(df["opening_hours"], df["lat"], df["lon"]):
         oh = hours.parse_hours(expr, coords=(lat, lon))
         week = hours.weekly_summary(oh, week_start) if oh is not None else {"open_hours": 0.0, "unknown_hours": 0.0, "open_days": 0}
-        stats.append({"hours_parsed": oh is not None, **{f"{k}_week": v for k, v in week.items()}})
+        stats.append({"hours_status": hours.hours_status(expr, oh, week), **{f"{k}_week": v for k, v in week.items()}})
     out = pd.concat([df.reset_index(drop=True), pd.DataFrame(stats)], axis=1)
-    out["valid_hours"] = out["hours_parsed"] & (out["open_hours_week"] > 0)
+    out["valid_hours"] = out["hours_status"] == hours.VALID
     return out.sort_values(["category", "poi_id"]).reset_index(drop=True)
 
 

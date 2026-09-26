@@ -1,9 +1,10 @@
-from llmuni.config import CategorySpec
+from llmuni.config import BrandedTags, CategorySpec
 from llmuni.data.osm import classify, display_name, format_address, hours_tag, match_brand
 
 CATEGORIES = {
     "pharmacy": CategorySpec(
         tags={"amenity": ["pharmacy"], "healthcare": ["pharmacy"]},
+        branded_tags=BrandedTags(tags={"shop": ["chemist"]}, brands=["walgreens", "cvs", "rite aid"]),
         hours_keys=["opening_hours:pharmacy", "opening_hours"],
     ),
     "coffee": CategorySpec(tags={"amenity": ["cafe"]}),
@@ -15,6 +16,12 @@ CATEGORIES = {
 def test_one_object_can_serve_several_categories():
     assert classify({"amenity": "cafe", "shop": "bakery"}, CATEGORIES) == ["coffee", "bakery"]
     assert classify({"amenity": "bench"}, CATEGORIES) == []
+
+
+def test_chemist_counts_as_pharmacy_only_for_counter_chains():
+    assert classify({"shop": "chemist", "name": "Walgreens"}, CATEGORIES) == ["pharmacy"]
+    assert classify({"shop": "chemist", "name": "Pharmacy", "brand": "CVS Pharmacy"}, CATEGORIES) == ["pharmacy"]
+    assert classify({"shop": "chemist", "name": "Sephora"}, CATEGORIES) == []
 
 
 def test_pharmacy_counter_hours_win_over_store_hours():

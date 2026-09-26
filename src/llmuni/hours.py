@@ -2,7 +2,11 @@
 
 LLMuni works in naive local datetimes (America/Los_Angeles). The Rust-backed
 `opening_hours` parser reads naive inputs as local time and returns aware values,
-which are converted back to naive here. The UNKNOWN state counts as closed.
+which are converted back to naive here.
+
+A place whose hours are missing, unparseable, or UNKNOWN at any time in the reference
+week is not verifiable: it never becomes a task candidate, and a model naming it gets
+an "unverifiable" stop rather than a closed one.
 """
 
 from __future__ import annotations
@@ -15,6 +19,21 @@ from opening_hours import OpeningHours, State
 
 TZ = ZoneInfo("America/Los_Angeles")
 SF_CENTER = (37.7749, -122.4194)
+
+# hours_status values; only VALID places become task candidates.
+VALID, CLOSED_ALL_WEEK, UNKNOWN, MISSING, UNPARSEABLE = "valid", "closed_all_week", "unknown", "missing", "unparseable"
+VERIFIABLE = frozenset({VALID, CLOSED_ALL_WEEK})
+
+
+def hours_status(expr: object, oh: OpeningHours | None, week: dict[str, float | int]) -> str:
+    """Classify a place's hours over the reference week (see the module docstring)."""
+    if not isinstance(expr, str) or not expr.strip():
+        return MISSING
+    if oh is None:
+        return UNPARSEABLE
+    if week["unknown_hours"] > 0:
+        return UNKNOWN
+    return VALID if week["open_hours"] > 0 else CLOSED_ALL_WEEK
 
 
 def parse_hours(expr: object, coords: tuple[float, float] = SF_CENTER) -> OpeningHours | None:
@@ -40,6 +59,16 @@ def open_intervals(oh: OpeningHours, start: datetime, end: datetime) -> list[tup
         else:
             out.append((a, b))
     return out
+
+
+def day_intervals(oh: OpeningHours, day: date, until_minute: int = 30 * 60) -> list[tuple[int, int]]:
+    """Open intervals on `day` in minutes after midnight, looking until_minute past midnight
+    (so a 22:00-02:00 shift ends at 1560)."""
+    midnight = datetime.combine(day, datetime.min.time())
+    return [
+        (int((a - midnight).total_seconds() // 60), int((b - midnight).total_seconds() // 60))
+        for a, b in open_intervals(oh, midnight, midnight + timedelta(minutes=until_minute))
+    ]
 
 
 def weekly_summary(oh: OpeningHours, week_start: datetime) -> dict[str, float | int]:
