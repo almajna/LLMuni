@@ -29,6 +29,21 @@ Checkpoint 1 (2026-09-25):
 - **Sources:** Muni GTFS comes from DataSF `dni7-qpv3` (the zip linked from sfmta.com was stale); OSM is
   BBBike's San Francisco extract.
 
+Checkpoint 2 (2026-09-25): post offices are USPS only; libraries are SF Public Library branches only.
+
+## Budget and run plan (2026-09-26)
+
+- **$30 total for now.** Calibration (5 tasks x 7 models, open book) then a 15-task pilot (5 per tier) x 7
+  models x closed + open book, hard cap **$27 total spend** (the ledger in `results/answers/` caps TOTAL spend).
+- Every paid call uses the final-run settings (reasoning effort medium, max_tokens 8000) so pilot answers are
+  reused by the final run.
+- **Checkpoint 3:** leaderboard, 3 hero-task proposals, exact cost estimate for the final run: 150 tasks, closed +
+  open book for all models, tool mode for the top 3.
+- After the hero pick: Phase 7 (site + Remotion video + README) from the pilot results, and one command
+  `make finish BUDGET_USD=<x>` that runs everything remaining for the final eval (reusing cached answers),
+  regenerates results, site, video and README, runs tests, commits and pushes; it stops cleanly at the budget
+  and resumes without paying twice. Documented in `FINISH.md`.
+
 ## Checkpoint 3 additions
 
 - Propose three **hero tasks** in which a well-known frontier model fails visibly (arrives at a closed store,

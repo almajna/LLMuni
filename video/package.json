@@ -1,0 +1,17 @@
+{
+  "name": "llmuni-video",
+  "private": true,
+  "scripts": {
+    "data": "cd .. && uv run python -m llmuni site-data",
+    "studio": "remotion studio src/index.ts",
+    "render:4x5": "remotion render src/index.ts LLMuni-4x5 out/llmuni_4x5.mp4",
+    "render:16x9": "remotion render src/index.ts LLMuni-16x9 out/llmuni_16x9.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": { "@types/react": "^18.3.0", "typescript": "^5.6.0" }
+}

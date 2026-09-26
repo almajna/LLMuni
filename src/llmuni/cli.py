@@ -22,6 +22,9 @@ def main(argv: list[str] | None = None) -> None:
     stages.add_parser("oracle", help="optimal plans for every task + brute-force and MILP cross-checks")
     stages.add_parser("examples", help="one worked example per tier with an itinerary map (R5)")
     stages.add_parser("grader-check", help="round-trip optimal plans through the grader (name + address only)")
+    stages.add_parser("heroes", help="hero-task candidates for the video from the pilot grades")
+    sd = stages.add_parser("site-data", help="export site and video data from the latest results")
+    sd.add_argument("--hero", help="task id for the video's hero task (default: a placeholder)")
     ev = stages.add_parser("eval", help="baselines + model runs (cached, total spend capped at BUDGET_USD) + grading")
     ev.add_argument("--subset", choices=["calibration", "pilot", "final"], default="pilot")
     ev.add_argument("--dry-run", action="store_true", help="write the cost estimate; call no model")
@@ -61,6 +64,15 @@ def main(argv: list[str] | None = None) -> None:
         from llmuni.grader.check import run_grader_check
 
         print(json.dumps(run_grader_check(cfg), indent=2))
+    elif args.stage == "heroes":
+        from llmuni.eval.heroes import run_heroes
+
+        for c in run_heroes(cfg):
+            print(c["task_id"], c["model"], c["mode"], c["kind"], c["failure"])
+    elif args.stage == "site-data":
+        from llmuni.site.export import export_site_data
+
+        print(json.dumps(export_site_data(cfg, args.hero)))
     elif args.stage == "eval":
         from llmuni.eval.run import run_eval
 

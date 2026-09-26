@@ -48,6 +48,13 @@ def test_ledger_refuses_a_call_whose_worst_case_would_cross_the_budget(tmp_path)
     assert Ledger(tmp_path / "ledger.jsonl", budget=1.00).spent == pytest.approx(0.10)  # spend persists
 
 
+def test_ledger_remembers_each_models_largest_completion(tmp_path):
+    ledger = Ledger(tmp_path / "ledger.jsonl", budget=10.0)
+    ledger.reserve(1.0)
+    ledger.settle(1.0, {"model": "x-ai/grok", "cost_usd": 0.2, "completion_tokens": 39000})
+    assert Ledger(tmp_path / "ledger.jsonl", budget=10.0).max_completion["x-ai/grok"] == 39000
+
+
 def test_travel_tool_answers_with_the_router_clock_and_enforces_the_call_limit():
     tool = TravelTool(_task(), _matrix(), max_calls=2)
     assert tool({"from_id": "start", "to_id": "p1", "depart_time": "09:02"}) == {

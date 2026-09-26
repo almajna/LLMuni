@@ -194,9 +194,11 @@ def estimate_cost(cfg: Config, todo: list[tuple[str, str, Task]], info: dict) ->
     """Expected and worst-case cost of the uncached calls, per model. Uses measured token counts from
     cached transcripts (same settings) where available, else config defaults."""
     measured = measured_usage(cfg)
+    largest = Ledger(ledger_path(cfg), cfg.eval.budget()).max_completion
     per_model: dict[str, dict] = {}
     for model, mode, task in todo:
         price_in, price_out = info[model]["price_in"], info[model]["price_out"]
+        output_cap = max(cfg.eval.max_output_tokens, int(1.5 * largest.get(model, 0)))  # as the ledger reserves
         prompt = estimate_tokens(prompts.messages(task, mode, cfg.eval.max_tool_calls),
                                  [prompts.TOOL_SPEC] if mode == "tool_use" else None)
         out = measured.get((model, "open_book"), {}).get("completion_tokens", cfg.eval.est_output_tokens)
@@ -208,9 +210,10 @@ def estimate_cost(cfg: Config, todo: list[tuple[str, str, Task]], info: dict) ->
             turns = cfg.eval.est_tool_turns
             expected = (turns * prompt + 75 * turns * turns) * price_in + (out + 0.5 * out * (turns - 1)) * price_out
         else:
-            turns = 1
-            expected = prompt * price_in + out * price_out
-        worst = turns * (1.25 * prompt * price_in + cfg.eval.max_output_tokens * price_out)
+            turns = 2  # worst case: the answer plus one repair retry (expected uses measured means)
+            expected = measured.get((model, mode), {}).get("cost_usd") or (prompt * price_in + out * price_out)
+        calls = cfg.eval.max_tool_calls + 3 if mode == "tool_use" else turns
+        worst = calls * (1.25 * prompt * price_in + output_cap * price_out)
         entry = per_model.setdefault(model, {"calls": 0, "expected": 0.0, "worst": 0.0,
                                              "calibrated": (model, "open_book") in measured})
         entry["calls"] += 1

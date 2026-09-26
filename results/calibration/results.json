@@ -1,0 +1,569 @@
+{
+  "benchmark_version": "v2026.10",
+  "gtfs_versions": {
+    "muni": [
+      "2026-08-29",
+      "2027-01-15"
+    ],
+    "bart": [
+      "2026-08-10",
+      "2027-01-10"
+    ]
+  },
+  "osm_date": "2026-09-18",
+  "n_tasks_by_tier": {
+    "easy": 2,
+    "medium": 2,
+    "hard": 1
+  },
+  "per_model": {
+    "openai/gpt-6-astra": {
+      "open_book": {
+        "tasks": 5,
+        "feasible_pct": 100.0,
+        "impossible_plan_pct": 0.0,
+        "unverifiable_pct": 0.0,
+        "mean_gap": 0.0113,
+        "median_gap": 0.0,
+        "hallucination_pct": 0.0,
+        "correct_infeasible_pct": null,
+        "false_infeasible_pct": 0.0,
+        "invalid_json_pct": 0.0,
+        "cost_usd": 0.3726,
+        "avg_tokens": 2783,
+        "by_tier": {
+          "easy": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.0083,
+            "median_gap": 0.0083,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.1088,
+            "avg_tokens": 2040
+          },
+          "medium": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.0198,
+            "median_gap": 0.0198,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.169,
+            "avg_tokens": 2986
+          },
+          "hard": {
+            "tasks": 1,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.0,
+            "median_gap": 0.0,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.0948,
+            "avg_tokens": 3866
+          }
+        }
+      }
+    },
+    "anthropic/claude-fable-5.1": {
+      "open_book": {
+        "tasks": 5,
+        "feasible_pct": 80.0,
+        "impossible_plan_pct": 20.0,
+        "unverifiable_pct": 0.0,
+        "mean_gap": 0.0774,
+        "median_gap": 0.0805,
+        "hallucination_pct": 0.0,
+        "correct_infeasible_pct": null,
+        "false_infeasible_pct": 0.0,
+        "invalid_json_pct": 0.0,
+        "cost_usd": 0.5002,
+        "avg_tokens": 3835,
+        "by_tier": {
+          "easy": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.0167,
+            "median_gap": 0.0167,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.1463,
+            "avg_tokens": 2811
+          },
+          "medium": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.1381,
+            "median_gap": 0.1381,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.2245,
+            "avg_tokens": 4104
+          },
+          "hard": {
+            "tasks": 1,
+            "feasible_pct": 0.0,
+            "impossible_plan_pct": 100.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": null,
+            "median_gap": null,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.1293,
+            "avg_tokens": 5347
+          }
+        }
+      }
+    },
+    "google/gemini-3.1-pro-preview": {
+      "open_book": {
+        "tasks": 5,
+        "feasible_pct": 100.0,
+        "impossible_plan_pct": 0.0,
+        "unverifiable_pct": 0.0,
+        "mean_gap": 0.1524,
+        "median_gap": 0.1915,
+        "hallucination_pct": 0.0,
+        "correct_infeasible_pct": null,
+        "false_infeasible_pct": 0.0,
+        "invalid_json_pct": 0.0,
+        "cost_usd": 0.1923,
+        "avg_tokens": 5156,
+        "by_tier": {
+          "easy": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.125,
+            "median_gap": 0.125,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.063,
+            "avg_tokens": 4031
+          },
+          "medium": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.2146,
+            "median_gap": 0.2146,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.0987,
+            "avg_tokens": 6082
+          },
+          "hard": {
+            "tasks": 1,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.0828,
+            "median_gap": 0.0828,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.0306,
+            "avg_tokens": 5553
+          }
+        }
+      }
+    },
+    "x-ai/grok-4.7": {
+      "open_book": {
+        "tasks": 5,
+        "feasible_pct": 100.0,
+        "impossible_plan_pct": 0.0,
+        "unverifiable_pct": 0.0,
+        "mean_gap": 0.1458,
+        "median_gap": 0.1277,
+        "hallucination_pct": 0.0,
+        "correct_infeasible_pct": null,
+        "false_infeasible_pct": 0.0,
+        "invalid_json_pct": 0.0,
+        "cost_usd": 0.4545,
+        "avg_tokens": 21206,
+        "by_tier": {
+          "easy": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.2,
+            "median_gap": 0.2,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.0955,
+            "avg_tokens": 11906
+          },
+          "medium": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.1232,
+            "median_gap": 0.1232,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.2739,
+            "avg_tokens": 30806
+          },
+          "hard": {
+            "tasks": 1,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.0828,
+            "median_gap": 0.0828,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.0851,
+            "avg_tokens": 20603
+          }
+        }
+      }
+    },
+    "deepseek/deepseek-v4-pro-0813": {
+      "open_book": {
+        "tasks": 5,
+        "feasible_pct": 60.0,
+        "impossible_plan_pct": 0.0,
+        "unverifiable_pct": 0.0,
+        "mean_gap": 0.2341,
+        "median_gap": 0.2376,
+        "hallucination_pct": 0.0,
+        "correct_infeasible_pct": null,
+        "false_infeasible_pct": 0.0,
+        "invalid_json_pct": 40.0,
+        "cost_usd": 0.2701,
+        "avg_tokens": 21122,
+        "by_tier": {
+          "easy": {
+            "tasks": 2,
+            "feasible_pct": 50.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.1667,
+            "median_gap": 0.1667,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 50.0,
+            "cost_usd": 0.0793,
+            "avg_tokens": 21112
+          },
+          "medium": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.2677,
+            "median_gap": 0.2677,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.1357,
+            "avg_tokens": 21016
+          },
+          "hard": {
+            "tasks": 1,
+            "feasible_pct": 0.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": null,
+            "median_gap": null,
+            "hallucination_pct": null,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 100.0,
+            "cost_usd": 0.0551,
+            "avg_tokens": 21354
+          }
+        }
+      }
+    },
+    "qwen/qwen3.8-max-prime": {
+      "open_book": {
+        "tasks": 5,
+        "feasible_pct": 80.0,
+        "impossible_plan_pct": 20.0,
+        "unverifiable_pct": 0.0,
+        "mean_gap": 0.2122,
+        "median_gap": 0.261,
+        "hallucination_pct": 0.0,
+        "correct_infeasible_pct": null,
+        "false_infeasible_pct": 0.0,
+        "invalid_json_pct": 0.0,
+        "cost_usd": 0.7544,
+        "avg_tokens": 21625,
+        "by_tier": {
+          "easy": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.1333,
+            "median_gap": 0.1333,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.3026,
+            "avg_tokens": 20547
+          },
+          "medium": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.291,
+            "median_gap": 0.291,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.299,
+            "avg_tokens": 21597
+          },
+          "hard": {
+            "tasks": 1,
+            "feasible_pct": 0.0,
+            "impossible_plan_pct": 100.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": null,
+            "median_gap": null,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.1529,
+            "avg_tokens": 23838
+          }
+        }
+      }
+    },
+    "meta-llama/llama-4-maverick": {
+      "open_book": {
+        "tasks": 5,
+        "feasible_pct": 60.0,
+        "impossible_plan_pct": 40.0,
+        "unverifiable_pct": 0.0,
+        "mean_gap": 0.469,
+        "median_gap": 0.3404,
+        "hallucination_pct": 0.0,
+        "correct_infeasible_pct": null,
+        "false_infeasible_pct": 0.0,
+        "invalid_json_pct": 0.0,
+        "cost_usd": 0.0026,
+        "avg_tokens": 1909,
+        "by_tier": {
+          "easy": {
+            "tasks": 2,
+            "feasible_pct": 100.0,
+            "impossible_plan_pct": 0.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.5333,
+            "median_gap": 0.5333,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.0008,
+            "avg_tokens": 1405
+          },
+          "medium": {
+            "tasks": 2,
+            "feasible_pct": 50.0,
+            "impossible_plan_pct": 50.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": 0.3404,
+            "median_gap": 0.3404,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.0011,
+            "avg_tokens": 1928
+          },
+          "hard": {
+            "tasks": 1,
+            "feasible_pct": 0.0,
+            "impossible_plan_pct": 100.0,
+            "unverifiable_pct": 0.0,
+            "mean_gap": null,
+            "median_gap": null,
+            "hallucination_pct": 0.0,
+            "correct_infeasible_pct": null,
+            "false_infeasible_pct": 0.0,
+            "invalid_json_pct": 0.0,
+            "cost_usd": 0.0007,
+            "avg_tokens": 2876
+          }
+        }
+      }
+    }
+  },
+  "baselines": {
+    "greedy": {
+      "tasks": 5,
+      "feasible_pct": 100.0,
+      "impossible_plan_pct": 0.0,
+      "unverifiable_pct": 0.0,
+      "mean_gap": 0.1718,
+      "median_gap": 0.2167,
+      "hallucination_pct": 0.0,
+      "correct_infeasible_pct": null,
+      "false_infeasible_pct": 0.0,
+      "invalid_json_pct": 0.0,
+      "cost_usd": 0.0,
+      "avg_tokens": 0,
+      "by_tier": {
+        "easy": {
+          "tasks": 2,
+          "feasible_pct": 100.0,
+          "impossible_plan_pct": 0.0,
+          "unverifiable_pct": 0.0,
+          "mean_gap": 0.1083,
+          "median_gap": 0.1083,
+          "hallucination_pct": 0.0,
+          "correct_infeasible_pct": null,
+          "false_infeasible_pct": 0.0,
+          "invalid_json_pct": 0.0,
+          "cost_usd": 0.0,
+          "avg_tokens": 0
+        },
+        "medium": {
+          "tasks": 2,
+          "feasible_pct": 100.0,
+          "impossible_plan_pct": 0.0,
+          "unverifiable_pct": 0.0,
+          "mean_gap": 0.2522,
+          "median_gap": 0.2522,
+          "hallucination_pct": 0.0,
+          "correct_infeasible_pct": null,
+          "false_infeasible_pct": 0.0,
+          "invalid_json_pct": 0.0,
+          "cost_usd": 0.0,
+          "avg_tokens": 0
+        },
+        "hard": {
+          "tasks": 1,
+          "feasible_pct": 100.0,
+          "impossible_plan_pct": 0.0,
+          "unverifiable_pct": 0.0,
+          "mean_gap": 0.1379,
+          "median_gap": 0.1379,
+          "hallucination_pct": 0.0,
+          "correct_infeasible_pct": null,
+          "false_infeasible_pct": 0.0,
+          "invalid_json_pct": 0.0,
+          "cost_usd": 0.0,
+          "avg_tokens": 0
+        }
+      }
+    },
+    "random": {
+      "tasks": 5,
+      "feasible_pct": 60.0,
+      "impossible_plan_pct": 40.0,
+      "unverifiable_pct": 0.0,
+      "mean_gap": 0.9343,
+      "median_gap": 0.9362,
+      "hallucination_pct": 0.0,
+      "correct_infeasible_pct": null,
+      "false_infeasible_pct": 0.0,
+      "invalid_json_pct": 0.0,
+      "cost_usd": 0.0,
+      "avg_tokens": 0,
+      "by_tier": {
+        "easy": {
+          "tasks": 2,
+          "feasible_pct": 100.0,
+          "impossible_plan_pct": 0.0,
+          "unverifiable_pct": 0.0,
+          "mean_gap": 0.9333,
+          "median_gap": 0.9333,
+          "hallucination_pct": 0.0,
+          "correct_infeasible_pct": null,
+          "false_infeasible_pct": 0.0,
+          "invalid_json_pct": 0.0,
+          "cost_usd": 0.0,
+          "avg_tokens": 0
+        },
+        "medium": {
+          "tasks": 2,
+          "feasible_pct": 50.0,
+          "impossible_plan_pct": 50.0,
+          "unverifiable_pct": 0.0,
+          "mean_gap": 0.9362,
+          "median_gap": 0.9362,
+          "hallucination_pct": 0.0,
+          "correct_infeasible_pct": null,
+          "false_infeasible_pct": 0.0,
+          "invalid_json_pct": 0.0,
+          "cost_usd": 0.0,
+          "avg_tokens": 0
+        },
+        "hard": {
+          "tasks": 1,
+          "feasible_pct": 0.0,
+          "impossible_plan_pct": 100.0,
+          "unverifiable_pct": 0.0,
+          "mean_gap": null,
+          "median_gap": null,
+          "hallucination_pct": 0.0,
+          "correct_infeasible_pct": null,
+          "false_infeasible_pct": 0.0,
+          "invalid_json_pct": 0.0,
+          "cost_usd": 0.0,
+          "avg_tokens": 0
+        }
+      }
+    }
+  },
+  "headline": {
+    "pct_impossible_best_model_closed_book": null,
+    "best_model_closed_book": null,
+    "best_gap_open_book": 0.0,
+    "best_model_open_book": "openai/gpt-6-astra",
+    "best_gap_tool_mode": null,
+    "best_model_tool_mode": null,
+    "tool_mode_improvement_pct": null
+  },
+  "spend_usd_total": 2.5467
+}

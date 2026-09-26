@@ -1,9 +1,9 @@
 """OpenRouter chat client with retries and a hard budget.
 
 Before every call the ledger reserves that call's worst case (estimated prompt tokens x 1.25 at the input
-price plus max_output_tokens at the output price; reasoning tokens bill as output and count toward
-max_tokens). The call is refused unless spent + reserved + worst case stays within the budget; afterwards
-the reservation is replaced by the cost OpenRouter reports. So a run never spends beyond BUDGET_USD.
+price, plus at the output price the larger of max_tokens and 1.5x the model's largest observed completion:
+some providers let reasoning run past max_tokens). The call is refused unless spent + reserved + worst
+case stays within the budget; afterwards the reservation is replaced by the cost OpenRouter reports.
 """
 
 from __future__ import annotations
@@ -54,9 +54,17 @@ class Ledger:
 
     def __init__(self, path: Path, budget: float) -> None:
         self.path, self.budget, self._lock = path, budget, threading.Lock()
-        lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
-        self.spent = sum(json.loads(line)["cost_usd"] for line in lines if line)
+        records = [json.loads(line) for line in (path.read_text(encoding="utf-8").splitlines() if path.exists() else []) if line]
+        self.spent = sum(r["cost_usd"] for r in records)
         self.reserved = 0.0
+        self.max_completion: dict[str, int] = {}  # largest completion seen per model (some exceed max_tokens)
+        for r in records:
+            self._observe(r)
+
+    def _observe(self, record: dict) -> None:
+        model, tokens = record.get("model"), record.get("completion_tokens") or 0
+        if model:
+            self.max_completion[model] = max(self.max_completion.get(model, 0), tokens)
 
     def reserve(self, amount: float) -> None:
         with self._lock:
@@ -74,13 +82,14 @@ class Ledger:
         with self._lock:
             self.reserved -= amount
             self.spent += record["cost_usd"]
+            self._observe(record)
             self.path.parent.mkdir(parents=True, exist_ok=True)
             with self.path.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(record) + "\n")
 
 
 def _transient(exc: BaseException) -> bool:
-    if isinstance(exc, httpx.TransportError):
+    if isinstance(exc, (httpx.TransportError, json.JSONDecodeError)):  # incl. keep-alive-only bodies on timeouts
         return True
     return isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code in TRANSIENT_STATUS
 
@@ -96,9 +105,11 @@ class OpenRouter:
                                  headers={"Authorization": f"Bearer {key}", "X-Title": "LLMuni benchmark"})
 
     def worst_case(self, model: str, messages: list[dict], tools: list[dict] | None = None) -> float:
+        """Worst-case cost of one call. Some providers let reasoning run past max_tokens, so the output
+        bound is the larger of max_tokens and 1.5x the largest completion this model has returned."""
         info = self.models[model]
-        return (1.25 * estimate_tokens(messages, tools) * info["price_in"]
-                + self.cfg.eval.max_output_tokens * info["price_out"])
+        output_cap = max(self.cfg.eval.max_output_tokens, int(1.5 * self.ledger.max_completion.get(model, 0)))
+        return 1.25 * estimate_tokens(messages, tools) * info["price_in"] + output_cap * info["price_out"]
 
     def chat(self, model: str, messages: list[dict], tools: list[dict] | None = None) -> dict:
         worst = self.worst_case(model, messages, tools)
