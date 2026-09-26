@@ -3,7 +3,7 @@ import { AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame, us
 import hero from "../data/hero.json";
 import { Flap } from "../lib/Flap";
 import { type Camera, type TimedPoint, PLATE, fit, fitTilted, mixCamera, project, toPlate, travelled } from "../lib/geo";
-import { C, SIGNAGE, UI, clock, modelColor, modelName } from "../lib/theme";
+import { C, SIGNAGE, UI, clock, modelColor, modelName, shortName } from "../lib/theme";
 
 // Shots 2-4 on one continuous map: fly in over the city while the request appears as a checklist, race the
 // routes on the replay clock (failures page in red), then hold on the arrivals board.
@@ -269,7 +269,7 @@ const Arrivals: React.FC<{ frame: number; wide: boolean }> = ({ frame, wide }) =
         {rows.map((r, i) => (
           <div key={r.u.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: r.u.color, flex: "none" }} />
-            <Flap text={r.u.name} width={wide ? 11 : 16} start={i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={2} />
+            <Flap text={wide ? (r.u.optimal ? "Optimal" : shortName(r.u.id)) : r.u.name} width={wide ? 11 : 16} start={i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={2} />
             <Flap text={r.time} width={8} align="right" start={8 + i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={2}
               color={r.u.optimal ? C.gold : undefined} />
             <Flap text={r.note} width={7} align="right" start={14 + i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={2}

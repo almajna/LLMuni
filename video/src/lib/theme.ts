@@ -34,6 +34,14 @@ const MODELS: Record<string, [string, string]> = {
 };
 
 export const modelName = (id: string) => MODELS[id]?.[0] ?? id.replace(/^.*\//, "");
+
+// Short names for narrow flap rows (11 cells).
+const SHORT: Record<string, string> = {
+  "openai/gpt-6-astra": "GPT-6 Astra", "anthropic/claude-fable-5.1": "Fable 5.1", "google/gemini-3.1-pro-preview": "Gemini 3.1",
+  "x-ai/grok-4.7": "Grok 4.7", "deepseek/deepseek-v4-pro-0813": "DeepSeek V4", "qwen/qwen3.8-max-prime": "Qwen 3.8",
+  "meta-llama/llama-4-maverick": "Llama 4 Mav",
+};
+export const shortName = (id: string) => SHORT[id] ?? modelName(id);
 export const modelColor = (id: string) => MODELS[id]?.[1] ?? C.label;
 
 export function clock(m: number | null | undefined): string {

@@ -228,3 +228,4 @@ node_modules/
 .impeccable/review/
 # Remotion render scratch
 video/out/*.png
+video/out/*/
