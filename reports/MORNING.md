@@ -19,8 +19,7 @@ deployed. Total model spend is **$27.14 of the $29 cap**. `.env` was never read 
   `results/grades.jsonl`. The README's headline and leaderboard are generated from them (`make readme`).
 - **Site:** night dispatch console with a split-flap standings board. It has a 3D replay of any task
   (default: hard-010), the board with mode and tier switches, a "How plans fail" chart and a method section.
-  It was built with impeccable + emil-design-eng and reviewed by a fresh reviewer.
-  Result: [see "Site review" below].
+  It was built with impeccable + emil-design-eng and reviewed by a fresh reviewer (see "Site review" below).
 - **Video:** Remotion, 42 s, hero task hard-010, both formats rendered. **README:** GIF at the top, generated
   tables, reproduce steps and limitations. **FINISH.md** and **`make finish`**: tool mode is the opt-in v2 step
   (`TOOL_MODE=3`).
@@ -43,11 +42,44 @@ deployed. Total model spend is **$27.14 of the $29 cap**. `.env` was never read 
 - **Closed book:** 0% feasible for every model. Pooled over all models, 82% of the plans are impossible:
   - 111 wrong addresses;
   - 20 stores found in neither source;
-  - 10 closed or late.
+  - 7 closed stores and 3 missed deadlines.
 
   A further 30 plans can't be checked. Grok 4.7 has the fewest impossible plans (41%).
 - Every model except Llama called all 3 impossible tasks impossible. The greedy baseline beats DeepSeek and
   Llama in open book.
+
+## Site review
+
+A fresh reviewer agent ran impeccable's finish review over desktop and phone captures of both modes.
+
+- **Round 1: fix, 8 items.** Four bugs I had missed:
+  - the phone route ran off-screen;
+  - the page was 1010 px wide on phones;
+  - alert labels were in a fallback font;
+  - the promised status lamps were missing.
+
+  The rest was coverage and scope wording.
+- **Round 2:** all 8 were fixed. Three small regressions were fixed too.
+- **Final word: "fix", with one item left.** A store-failure alert drew under the routes. I patched it afterwards
+  (the label layers now ignore depth) and checked it in fresh captures. It was not re-scored, because the
+  unattended two-round review budget was spent.
+- **The reviewer's remaining "ceiling" notes** (not required fixes):
+  - arcs instead of street paths (see `BLOCKED.md`);
+  - no extruded buildings at city zoom (OSM tiles only carry them from zoom 13);
+  - map neighbourhood labels in the tile server's Noto Sans.
+
+**Design system:** a fresh documenter agent wrote `DESIGN.md` and `.impeccable/design.json` from the built code:
+palette, type ramp, flap cell, lamps and 11 named rules. The video counts as a second surface of the same system.
+
+- **Drift it flagged, and I fixed:**
+  - the camera's breakpoint could tuck routes under the rail at 901-999 px;
+  - the speed key read "2×" for a 3× rate;
+  - gold was used for the caret and the favicon;
+  - a dead CSS selector;
+  - the video's pre-review flap colors and round model keys. The videos and GIF were re-rendered.
+- **Left as is:** Grok's periwinkle route color is close to the "wrong address" lavender in the closed-book
+  failure bars. They appear in different roles (a small swatch vs. a bar segment), but it's a one-line change if
+  you want it.
 
 ## Where to look
 
@@ -128,5 +160,6 @@ deployed. Total model spend is **$27.14 of the $29 cap**. `.env` was never read 
    and output `dist`. No environment variables are needed.
 4. **Post the video.** Use 4:5 for feeds and 16:9 for YouTube/X, with the site link. Add music if you like;
    both renders are silent.
-5. **Optional, more budget:** `make finish BUDGET_USD=<new total> TOOL_MODE=3` adds tool mode (about $210) and
-   more rounds of tasks (about $2.63 per three tasks).
+5. **Optional, more budget:** `make finish BUDGET_USD=<new total> TOOL_MODE=3` adds tool mode for the top 3
+   models. The uncalibrated estimate is about $1.40 per task: about $42 for the current 30 tasks, $210 for all
+   150. More closed/open rounds cost about $2.63 per three tasks. `make estimate` prints the exact figures first.

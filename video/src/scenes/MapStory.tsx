@@ -157,7 +157,7 @@ export const MapStory: React.FC = () => {
           const top = atEnd ? y - 64 - stack * 40 : y + 46 + stack * 40; // meet-up alerts stack above, store alerts below
           return (
             <div key={i} style={{ position: "absolute", left: Math.max(220, Math.min(L.map.w - 220, x)), top, translate: atEnd ? "-50% -100%" : "-50% 0%", opacity: born,
-              scale: interpolate(born, [0, 1], [0.92, 1]), background: a.hero ? C.alert : "#961f24", color: "#fff5f4", padding: "5px 11px",
+              scale: interpolate(born, [0, 1], [0.92, 1]), background: a.hero ? C.alert : C.alertPlate, color: C.alertPlateInk, padding: "5px 11px",
               fontFamily: SIGNAGE, fontWeight: 700, fontSize: L.wide ? 26 : 24, letterSpacing: "0.04em", whiteSpace: "nowrap", borderRadius: 3,
               boxShadow: "0 6px 16px rgba(0,0,0,0.5)", textTransform: "uppercase" }}>
               {a.text}
@@ -268,7 +268,7 @@ const Arrivals: React.FC<{ frame: number; wide: boolean }> = ({ frame, wide }) =
       <div style={{ display: "grid", gap: 10 }}>
         {rows.map((r, i) => (
           <div key={r.u.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: r.u.color, flex: "none" }} />
+            <span style={{ width: 12, height: 4, borderRadius: 1, background: r.u.color, flex: "none" }} />
             <Flap text={wide ? (r.u.optimal ? "Optimal" : shortName(r.u.id)) : r.u.name} width={wide ? 11 : 16} start={i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={2} />
             <Flap text={r.time} width={8} align="right" start={8 + i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={2}
               color={r.u.optimal ? C.gold : undefined} />

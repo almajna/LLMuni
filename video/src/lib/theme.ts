@@ -13,9 +13,11 @@ export const C = {
   gold: "#f0a500",
   alert: "#e5484d",
   alertInk: "#ff8f8a",
+  alertPlate: "#962024",
+  alertPlateInk: "#ffecea",
   ok: "#8fcf9c",
-  flapTop: "#1e201d",
-  flapBottom: "#191b18",
+  flapTop: "#242621",
+  flapBottom: "#181a17",
   flapSplit: "#060706",
   flapInk: "#f3efe2",
 };

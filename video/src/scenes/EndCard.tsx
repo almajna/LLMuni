@@ -34,7 +34,7 @@ export const EndCard: React.FC = () => {
         </div>
         {rows.map((r, i) => (
           <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: modelColor(r.id), flex: "none" }} />
+            <span style={{ width: 12, height: 4, borderRadius: 1, background: modelColor(r.id), flex: "none" }} />
             <Flap text={String(i + 1)} width={1} start={6 + i * 6} cell={cell} steps={4} stepFrames={2} />
             <Flap text={modelName(r.id)} width={16} start={8 + i * 6} cell={cell} stagger={1} steps={4} stepFrames={2} gap={4} />
             <Flap text={r.s.feasible_pct == null ? "—" : `${Math.round(r.s.feasible_pct)}%`} width={4} align="right" start={14 + i * 6} cell={cell} stagger={1} steps={4} stepFrames={2} gap={4} />
