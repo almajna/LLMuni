@@ -1,0 +1,32 @@
+# Task start/end points: street intersections resolved against the OSM extract
+# (`make tasks` writes data/processed/landmarks.csv). `label` is what prompts say.
+- {neighborhood: Mission, label: "16th & Mission", streets: [Mission Street, 16th Street]}
+- {neighborhood: Mission, label: "24th & Valencia", streets: [Valencia Street, 24th Street]}
+- {neighborhood: Mission, label: "Dolores Park (18th & Dolores)", streets: [Dolores Street, 18th Street]}
+- {neighborhood: SoMa, label: "4th & King", streets: [4th Street, King Street]}
+- {neighborhood: SoMa, label: "2nd & Howard", streets: [2nd Street, Howard Street]}
+- {neighborhood: SoMa, label: "9th & Folsom", streets: [9th Street, Folsom Street]}
+- {neighborhood: Sunset, label: "9th Ave & Irving", streets: [9th Avenue, Irving Street]}
+- {neighborhood: Sunset, label: "30th Ave & Noriega", streets: [30th Avenue, Noriega Street]}
+- {neighborhood: Sunset, label: "45th Ave & Judah", streets: [45th Avenue, Judah Street]}
+- {neighborhood: Richmond, label: "6th Ave & Clement", streets: [6th Avenue, Clement Street]}
+- {neighborhood: Richmond, label: "25th Ave & Geary", streets: [25th Avenue, Geary Boulevard]}
+- {neighborhood: Richmond, label: "37th Ave & Balboa", streets: [37th Avenue, Balboa Street]}
+- {neighborhood: Marina, label: "Chestnut & Fillmore", streets: [Chestnut Street, Fillmore Street]}
+- {neighborhood: Marina, label: "Union & Buchanan", streets: [Union Street, Buchanan Street]}
+- {neighborhood: Castro, label: "Castro & Market", streets: [Castro Street, Market Street]}
+- {neighborhood: Castro, label: "18th & Castro", streets: [18th Street, Castro Street]}
+- {neighborhood: Chinatown, label: "Grant & Washington", streets: [Grant Avenue, Washington Street]}
+- {neighborhood: Chinatown, label: "Stockton & Clay", streets: [Stockton Street, Clay Street]}
+- {neighborhood: Bayview, label: "3rd & Palou", streets: [3rd Street, Palou Avenue]}
+- {neighborhood: Bayview, label: "3rd & Evans", streets: [3rd Street, Evans Avenue]}
+- {neighborhood: Dogpatch, label: "3rd & 22nd", streets: [3rd Street, 22nd Street]}
+- {neighborhood: Dogpatch, label: "20th & Minnesota", streets: [20th Street, Minnesota Street]}
+- {neighborhood: Haight, label: "Haight & Ashbury", streets: [Haight Street, Ashbury Street]}
+- {neighborhood: Haight, label: "Haight & Fillmore", streets: [Haight Street, Fillmore Street]}
+- {neighborhood: Downtown, label: "Union Square (Powell & Geary)", streets: [Powell Street, Geary Street]}
+- {neighborhood: Downtown, label: "Civic Center (8th & Market)", streets: [8th Street, Market Street]}
+- {neighborhood: North Beach, label: "Columbus & Union", streets: [Columbus Avenue, Union Street]}
+- {neighborhood: Hayes Valley, label: "Hayes & Laguna", streets: [Hayes Street, Laguna Street]}
+- {neighborhood: Glen Park, label: "Diamond & Bosworth", streets: [Diamond Street, Bosworth Street]}
+- {neighborhood: West Portal, label: "West Portal & Ulloa", streets: [West Portal Avenue, Ulloa Street]}

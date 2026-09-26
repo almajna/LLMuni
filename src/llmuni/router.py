@@ -14,6 +14,8 @@ import itertools
 import json
 import logging
 import os
+import shutil
+import sys
 import warnings
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
@@ -80,9 +82,36 @@ class TravelMatrix:
 
     @classmethod
     def load(cls, path: Path) -> TravelMatrix:
+        """From a .npz file, or from a matrix directory (arrive.npy is memory-mapped, not read into RAM)."""
+        if path.is_dir():
+            meta = json.loads((path / "meta.json").read_text(encoding="utf-8"))
+            return cls(meta["ids"], date.fromisoformat(meta["day"]), meta["start"], meta["step"],
+                       np.load(path / "arrive.npy", mmap_mode="r"), np.load(path / "walk.npy"))
         with np.load(path) as z:
             meta = json.loads(str(z["meta"]))
             return cls(list(z["ids"]), date.fromisoformat(meta["day"]), meta["start"], meta["step"], z["arrive"], z["walk"])
+
+    @staticmethod
+    def assemble(path: Path, ids: list[str], day: date, start: int, step: int, blocks: list[Path], walk: Path) -> None:
+        """Write a matrix directory by streaming origin blocks into a memory-mapped arrive.npy, so the
+        full matrix never has to fit in memory at once. meta.json is written last and marks completion."""
+        tmp = path.with_suffix(".tmp")
+        shutil.rmtree(tmp, ignore_errors=True)
+        tmp.mkdir(parents=True)
+        first = np.load(blocks[0], mmap_mode="r")
+        arrive = np.lib.format.open_memmap(tmp / "arrive.npy", mode="w+", dtype=np.uint16,
+                                           shape=(len(ids), len(ids), first.shape[2]))
+        row = 0
+        for block in blocks:
+            part = np.load(block)
+            arrive[row : row + len(part)] = part
+            row += len(part)
+        arrive.flush()
+        del arrive
+        shutil.copyfile(walk, tmp / "walk.npy")
+        meta = {"ids": ids, "day": day.isoformat(), "start": start, "step": step}
+        (tmp / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
+        tmp.rename(path)
 
 
 def fifo_arrivals(minutes: np.ndarray, start: int, step: int) -> np.ndarray:
@@ -126,6 +155,8 @@ class Router:
 
         base = self._task(destinations, departures[0], transit)
         out = np.full((len(origins), len(destinations), len(departures)), NO_TRIP, dtype=np.uint16)
+        total = len(origins) * len(departures)
+        done, started = itertools.count(1), perf_counter()
 
         def search(job: tuple[int, int]) -> None:
             i, k = job
@@ -135,6 +166,9 @@ class Router:
             result = com.conveyal.r5.analyst.TravelTimeComputer(task, self.network).computeTravelTimes()
             minutes = np.asarray(result.travelTimes.getValues()[0], dtype=np.int64)
             out[i, :, k] = np.where(minutes >= min(R5_NULL, NO_TRIP), NO_TRIP, minutes)
+            n = next(done)
+            if total >= 50_000 and n % (total // 20) == 0:
+                log.info("  %3.0f%% of %d searches (%.0f/s)", 100 * n / total, total, n / (perf_counter() - started))
 
         with ThreadPoolExecutor(self.params.threads) as pool:
             for _ in pool.map(search, itertools.product(range(len(origins)), range(len(departures)))):
@@ -145,22 +179,32 @@ class Router:
                     out[i, j, :] = 0
         return out
 
-    def matrix(self, places: list[Place], day: date, first: int, last: int) -> TravelMatrix:
-        """TravelMatrix for grid departures from `first` to `last` (minutes after midnight), cached on disk."""
+    def matrix(self, places: list[Place], day: date, first: int, last: int, block: int = 64) -> TravelMatrix:
+        """TravelMatrix for grid departures from `first` to `last` (minutes after midnight), cached on disk.
+        Resumable: each block of origins is saved as it finishes, so an interruption costs one block."""
         step = self.params.departure_step_min
-        path = self._cache_path(places, day, first, last, step)
-        if path.exists():
+        path = matrix_cache_path(self.cfg, places, day, first, last)
+        if (path / "meta.json").exists():
             return TravelMatrix.load(path)
-        grid = list(range(first, last + 1, step))
+        parts = path.with_suffix(".parts")
+        parts.mkdir(parents=True, exist_ok=True)
         midnight = datetime.combine(day, datetime.min.time())
-        departures = [midnight + timedelta(minutes=m) for m in grid]
+        departures = [midnight + timedelta(minutes=m) for m in range(first, last + 1, step)]
+        n_blocks = -(-len(places) // block)
+        blocks = [parts / f"arrive_{b:04d}.npy" for b in range(n_blocks)]
         started = perf_counter()
-        minutes = self.travel_times(places, places, departures)
-        walk = self.travel_times(places, places, departures[:1], transit=False)[:, :, 0]
-        log.info("matrix %d places x %d departures on %s in %.0f s", len(places), len(grid), day, perf_counter() - started)
-        tm = TravelMatrix([p.id for p in places], day, first, step, fifo_arrivals(minutes, first, step), walk)
-        tm.save(path)
-        return tm
+        for b, (i, part) in enumerate(zip(range(0, len(places), block), blocks)):
+            if part.exists():
+                continue
+            minutes = self.travel_times(places[i : i + block], places, departures)
+            np.save(part, fifo_arrivals(minutes, first, step))
+            log.info("%s: block %d/%d done (%.0f s so far)", day, b + 1, n_blocks, perf_counter() - started)
+        walk = parts / "walk.npy"
+        if not walk.exists():
+            np.save(walk, self.travel_times(places, places, departures[:1], transit=False)[:, :, 0])
+        TravelMatrix.assemble(path, [p.id for p in places], day, first, step, blocks, walk)
+        shutil.rmtree(parts)  # the finished matrix supersedes its partial blocks
+        return TravelMatrix.load(path)
 
     def itinerary(self, a: Place, b: Place, depart: datetime) -> list[dict]:
         """Legs of the earliest-arriving trip from a to b leaving at depart (for visualization)."""
@@ -176,6 +220,7 @@ class Router:
                 transport_modes=[r5py.TransportMode.TRANSIT, r5py.TransportMode.WALK],
                 speed_walking=self.params.walk_speed_mps * 3.6,
                 max_time=timedelta(minutes=self.params.max_trip_minutes),
+                max_time_walking=timedelta(minutes=self.params.max_walk_minutes),
             )
         trips = trips.dropna(subset=["travel_time"])
         if trips.empty:
@@ -194,7 +239,7 @@ class Router:
                 "arrive": leg.arrive.to_pydatetime(),
                 "wait_min": leg.wait_time.total_seconds() / 60 if pd.notna(leg.wait_time) else 0.0,
                 "distance_m": float(leg.distance),
-                "coords": [(round(x, 6), round(y, 6)) for x, y in leg.geometry.coords] if leg.geometry is not None else [],
+                "coords": _coords(leg.geometry),
             })
         return legs
 
@@ -215,19 +260,29 @@ class Router:
                 speed_walking=self.params.walk_speed_mps * 3.6,
             )
 
-    def _cache_path(self, places: list[Place], day: date, first: int, last: int, step: int) -> Path:
-        sources = json.loads(self.cfg.paths.manifest.read_text(encoding="utf-8"))["sources"]
-        key = {
-            "inputs": {name: src["sha256"] for name, src in sources.items() if src.get("sha256")},
-            "places": [(p.id, round(p.lat, 6), round(p.lon, 6)) for p in places],
-            "day": day.isoformat(),
-            "grid": [first, last, step],
-            "walk_speed_mps": self.params.walk_speed_mps,
-            "max_trip_minutes": self.params.max_trip_minutes,
-            "max_walk_minutes": self.params.max_walk_minutes,
-        }
-        digest = hashlib.sha256(json.dumps(key, sort_keys=True).encode()).hexdigest()[:20]
-        return self.cfg.paths.cache / "router" / f"{day:%Y%m%d}_{digest}.npz"
+def matrix_cache_path(cfg: Config, places: list[Place], day: date, first: int, last: int) -> Path:
+    """Where Router.matrix caches a matrix: keyed by input data, places, day, grid and routing params."""
+    sources = json.loads(cfg.paths.manifest.read_text(encoding="utf-8"))["sources"]
+    params = cfg.router
+    key = {
+        "inputs": {name: src["sha256"] for name, src in sources.items() if src.get("sha256")},
+        "places": [(p.id, round(p.lat, 6), round(p.lon, 6)) for p in places],
+        "day": day.isoformat(),
+        "grid": [first, last, params.departure_step_min],
+        "walk_speed_mps": params.walk_speed_mps,
+        "max_trip_minutes": params.max_trip_minutes,
+        "max_walk_minutes": params.max_walk_minutes,
+    }
+    digest = hashlib.sha256(json.dumps(key, sort_keys=True).encode()).hexdigest()[:20]
+    return cfg.paths.cache / "router" / f"{day:%Y%m%d}_{digest}"  # a matrix directory (TravelMatrix.assemble)
+
+
+def _coords(geometry) -> list[tuple[float, float]]:
+    """(lon, lat) points of a leg's line; multi-part lines are joined in order."""
+    if geometry is None or geometry.is_empty:
+        return []
+    parts = geometry.geoms if geometry.geom_type.startswith("Multi") else [geometry]
+    return [(round(x, 6), round(y, 6)) for part in parts for x, y in part.coords]
 
 
 def _points(places: list[Place]) -> gpd.GeoDataFrame:
@@ -239,7 +294,10 @@ def _points(places: list[Place]) -> gpd.GeoDataFrame:
 
 
 def _use_configured_java(cfg: Config) -> None:
-    """Point JPype at the configured JDK (e.g. the portable one in .tools/) unless JAVA_HOME is set."""
+    """Point JPype at the configured JDK (e.g. the portable one in .tools/) unless JAVA_HOME is set,
+    and cap the JVM heap: r5py reads --max-memory from sys.argv when it starts the JVM."""
+    if "--max-memory" not in sys.argv:
+        sys.argv += ["--max-memory", cfg.router.max_memory]
     if os.environ.get("JAVA_HOME") or cfg.router.java_home is None:
         return
     home = cfg.root / cfg.router.java_home

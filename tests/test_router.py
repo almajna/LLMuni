@@ -52,6 +52,34 @@ def test_matrix_round_trips_through_disk(tmp_path):
     assert np.array_equal(loaded.arrive, tm.arrive) and np.array_equal(loaded.walk, tm.walk)
 
 
+def test_matrix_resumes_from_saved_blocks(tmp_path):
+    from llmuni.config import load_config
+    from llmuni.router import Place, Router
+
+    cfg = load_config()
+    cfg = cfg.model_copy(update={"paths": cfg.paths.model_copy(update={"cache": tmp_path})})
+    places = [Place(f"p{i}", 37.70 + i / 1000, -122.40) for i in range(5)]
+    calls, fail_on = [], {"call": 3}
+
+    def fake_travel_times(origins, destinations, departures, *, transit=True):
+        calls.append(len(origins))
+        if len(calls) == fail_on["call"]:
+            raise RuntimeError("killed mid-run")
+        minutes = np.array([[10 + abs(int(o.id[1:]) - int(d.id[1:])) for d in destinations] for o in origins])
+        return np.repeat(minutes[:, :, None], len(departures), axis=2).astype(np.uint16)
+
+    router = Router.__new__(Router)  # no JVM: R5 searches are faked
+    router.cfg, router.params, router.travel_times = cfg, cfg.router, fake_travel_times
+    with pytest.raises(RuntimeError):
+        router.matrix(places, date(2026, 10, 7), 540, 560, block=2)  # dies on the third block
+    calls.clear()
+    fail_on["call"] = -1
+    resumed = router.matrix(places, date(2026, 10, 7), 540, 560, block=2)
+    assert calls == [1, 5]  # only the last block (1 origin) and the walk matrix were recomputed
+    assert resumed.arrive[4, 0, 0] == 540 + 14 and resumed.walk[0, 3] == 13
+    assert not list(tmp_path.rglob("*.parts"))  # partial blocks are removed once the matrix is saved
+
+
 @pytest.mark.router
 def test_known_trips_are_plausible():
     from llmuni.config import load_config

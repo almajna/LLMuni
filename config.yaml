@@ -33,12 +33,83 @@ data:
 
 router:
   java_home: .tools/jdk-21        # portable JDK 21 for R5, used only when JAVA_HOME is unset
+  max_memory: 4G                   # JVM heap cap for R5 (r5py defaults to 80% of RAM)
   walk_speed_mps: 1.3
   max_trip_minutes: 150            # R5 search limit per trip
   max_walk_minutes: 30             # per walking leg (access, egress, walk-only trips); R5 is ~20x slower uncapped
   departure_step_min: 5            # time-dependent matrices sample departures every 5 minutes
   threads: 8                       # concurrent R5 searches
   sanity_departure: 2026-10-07T09:00:00  # Wednesday of the reference week
+
+tasks:
+  landmarks: data/landmarks.yaml
+  n_per_tier: 100
+  pilot_size: 50
+  candidates_k: 6                     # stores listed per errand in open-book mode
+  infeasible_share: 0.10
+  matrix_window: ["07:00", "22:00"]   # grid departures precomputed per service day
+  horizon: "23:00"                    # every plan must be finished by then
+  cross_city_km: 4.0
+  rare_categories: [bike_shop, florist, library, bookstore]
+  closing_soon_categories: [post_office, bank_atm, library, dry_cleaning, hardware, florist]
+  brands: ["Trader Joe's", Safeway, Whole Foods Market]
+  service_min:   # assumed minutes spent inside, per errand
+    pharmacy: 10
+    post_office: 15
+    supermarket: 20
+    hardware: 10
+    bank_atm: 5
+    library: 10
+    coffee: 10
+    bakery: 5
+    dry_cleaning: 5
+    bookstore: 15
+    florist: 10
+    bike_shop: 20
+  tiers:
+    easy:
+      errands: [3, 3]
+      depart: ["09:00", "13:00"]
+      end_share: 0.3
+      end_slack_min: [60, 120]        # arrive_by = optimal arrival + slack
+      brand_share: 0.1
+    medium:
+      errands: [4, 5]
+      depart: ["10:00", "15:00"]
+      end_share: 0.5
+      end_slack_min: [30, 60]
+      brand_share: 0.2
+      closing_soon_lead_min: [60, 150]  # depart this long before the nearby stores of one errand close
+    hard:
+      errands: [6, 7]
+      depart: ["08:00", "11:30"]
+      end_share: 1.0
+      end_slack_min: [5, 20]
+      brand_share: 0.5
+      cross_city: true
+      deadlines: [1, 2]
+      deadline_slack_min: [5, 20]
+      min_rare: 2
+
+eval:
+  budget_usd: 25                 # hard cap for a run (pilot 25, full 150); BUDGET_USD in the environment overrides
+  pilot_modes: [closed_book, open_book]
+  modes: [closed_book, open_book, tool_use]
+  max_tool_calls: 40             # per task in tool_use mode
+  max_output_tokens: 16000       # per call, reasoning included: bounds each call's worst-case cost
+  est_output_tokens: 6000        # expected per answer, for cost estimates (reasoning models)
+  est_tool_turns: 12             # expected model turns per tool_use task, for cost estimates
+  concurrency: 4
+  request_timeout_s: 600
+  # Latest flagship per lab on OpenRouter (2026-09-25); needs approval before any paid run.
+  models:
+    - openai/gpt-6-astra
+    - anthropic/claude-fable-5.1
+    - google/gemini-3.1-pro-preview
+    - x-ai/grok-4.7
+    - deepseek/deepseek-v4-pro-0813
+    - qwen/qwen3.8-max-prime
+    - meta-llama/llama-4-maverick
 
 # Errand categories: OSM tag rules, which hours tag to trust, optional brand filters
 # (brand patterns are lowercase substrings of the name/brand tags).

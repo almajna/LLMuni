@@ -56,12 +56,61 @@ class DataConfig(BaseModel):
 
 class RouterConfig(BaseModel):
     java_home: Path | None = None  # relative to the repo root
+    max_memory: str = "4G"  # JVM heap cap passed to r5py (--max-memory)
     walk_speed_mps: float
     max_trip_minutes: int
     max_walk_minutes: int
     departure_step_min: int
     threads: int
     sanity_departure: datetime
+
+
+class TierConfig(BaseModel):
+    errands: tuple[int, int]
+    depart: tuple[str, str]
+    end_share: float
+    end_slack_min: tuple[int, int]
+    brand_share: float = 0.0
+    closing_soon_lead_min: tuple[int, int] | None = None
+    cross_city: bool = False
+    deadlines: tuple[int, int] = (0, 0)
+    deadline_slack_min: tuple[int, int] = (0, 0)
+    min_rare: int = 0
+
+
+class TasksConfig(BaseModel):
+    landmarks: Path  # relative to the repo root
+    n_per_tier: int
+    pilot_size: int
+    candidates_k: int
+    infeasible_share: float
+    matrix_window: tuple[str, str]
+    horizon: str
+    cross_city_km: float
+    rare_categories: list[str]
+    closing_soon_categories: list[str]
+    brands: list[str]
+    service_min: dict[str, int]
+    tiers: dict[str, TierConfig]
+
+
+class EvalConfig(BaseModel):
+    budget_usd: float
+    pilot_modes: list[str]
+    modes: list[str]
+    max_tool_calls: int
+    max_output_tokens: int
+    est_output_tokens: int
+    est_tool_turns: int
+    concurrency: int
+    request_timeout_s: float
+    models: list[str]
+
+    def budget(self) -> float:
+        """The run's hard spending cap: BUDGET_USD from the environment, else the config value."""
+        import os
+
+        return float(os.environ.get("BUDGET_USD", self.budget_usd))
 
 
 class Config(BaseModel):
@@ -73,6 +122,8 @@ class Config(BaseModel):
     paths: Paths
     data: DataConfig
     router: RouterConfig
+    tasks: TasksConfig
+    eval: EvalConfig
     categories: dict[str, CategorySpec]
 
     def rel(self, path: Path) -> str:

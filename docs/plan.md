@@ -8,10 +8,10 @@ Source brief: [`errandarena-scope.md`](../errandarena-scope.md). The project is 
 |---|---|---|
 | 1. Data | `make data` | done |
 | 2. Router | `make router-check` | done |
-| 3. Task generator | `make tasks` | in progress |
-| 4. Oracle | `make oracle` | ends at **Checkpoint 2** |
-| 5. Grader | | |
-| 6. Evaluation | `make eval` | pilot ends at **Checkpoint 3** |
+| 3. Task generator | `make matrices`, `make tasks` | done |
+| 4. Oracle | `make oracle`, `make examples` | done; **Checkpoint 2** in `reports/checkpoint2.md` |
+| 5. Grader | (used by `make pilot` / `make eval`) | code and tests done |
+| 6. Evaluation | `make estimate`, `make pilot`, `make eval` | code done; pilot ends at **Checkpoint 3** |
 | 7. Site + video | `make site`, Remotion | ends at **Checkpoint 4** |
 | 8. RL (optional) | | needs separate approval and a cost estimate |
 

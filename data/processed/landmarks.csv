@@ -1,0 +1,31 @@
+place_id,label,neighborhood,lat,lon
+L01,16th & Mission,Mission,37.765061,-122.419696
+L02,24th & Valencia,Mission,37.752111,-122.420666
+L03,Dolores Park (18th & Dolores),Mission,37.761427,-122.426091
+L04,4th & King,SoMa,37.776331,-122.394019
+L05,2nd & Howard,SoMa,37.786773,-122.398259
+L06,9th & Folsom,SoMa,37.773773,-122.411627
+L07,9th Ave & Irving,Sunset,37.764049,-122.466333
+L08,30th Ave & Noriega,Sunset,37.753725,-122.488279
+L09,45th Ave & Judah,Sunset,37.760476,-122.504874
+L10,6th Ave & Clement,Richmond,37.782952,-122.464438
+L11,25th Ave & Geary,Richmond,37.780098,-122.484752
+L12,37th Ave & Balboa,Richmond,37.775722,-122.497333
+L13,Chestnut & Fillmore,Marina,37.80082,-122.436263
+L14,Union & Buchanan,Marina,37.797513,-122.43222
+L15,Castro & Market,Castro,37.762671,-122.435199
+L16,18th & Castro,Castro,37.760891,-122.435014
+L17,Grant & Washington,Chinatown,37.795148,-122.406495
+L18,Stockton & Clay,Chinatown,37.794065,-122.407914
+L19,3rd & Palou,Bayview,37.73402,-122.390984
+L20,3rd & Evans,Bayview,37.742706,-122.387909
+L21,3rd & 22nd,Dogpatch,37.75794,-122.388333
+L22,20th & Minnesota,Dogpatch,37.760421,-122.390477
+L23,Haight & Ashbury,Haight,37.770015,-122.446952
+L24,Haight & Fillmore,Haight,37.772113,-122.430461
+L25,Union Square (Powell & Geary),Downtown,37.78737,-122.408246
+L26,Civic Center (8th & Market),Downtown,37.778701,-122.414739
+L27,Columbus & Union,North Beach,37.80032,-122.410218
+L28,Hayes & Laguna,Hayes Valley,37.776471,-122.426286
+L29,Diamond & Bosworth,Glen Park,37.733557,-122.434153
+L30,West Portal & Ulloa,West Portal,37.740904,-122.46585

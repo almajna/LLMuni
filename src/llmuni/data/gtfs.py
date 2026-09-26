@@ -13,9 +13,9 @@ WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", 
 
 def summarize_feed(path: Path, week_start: date) -> dict:
     with zipfile.ZipFile(path) as z:
-        agency, feed_info = _read(z, "agency.txt"), _read(z, "feed_info.txt")
-        calendar, calendar_dates = _read(z, "calendar.txt"), _read(z, "calendar_dates.txt")
-        routes, stops, trips = _read(z, "routes.txt"), _read(z, "stops.txt"), _read(z, "trips.txt")
+        agency, feed_info = read_table(z, "agency.txt"), read_table(z, "feed_info.txt")
+        calendar, calendar_dates = read_table(z, "calendar.txt"), read_table(z, "calendar_dates.txt")
+        routes, stops, trips = read_table(z, "routes.txt"), read_table(z, "stops.txt"), read_table(z, "trips.txt")
 
     dates: list[str] = []
     if calendar is not None and len(calendar):
@@ -58,7 +58,7 @@ def active_service_ids(calendar: pd.DataFrame | None, calendar_dates: pd.DataFra
     return active
 
 
-def _read(z: zipfile.ZipFile, name: str) -> pd.DataFrame | None:
+def read_table(z: zipfile.ZipFile, name: str) -> pd.DataFrame | None:
     members = {Path(n).name: n for n in z.namelist()}  # some feeds nest their files in a folder
     if name not in members:
         return None
