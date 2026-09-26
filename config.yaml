@@ -121,6 +121,9 @@ eval:
     - qwen/qwen3.8-max-prime
     - meta-llama/llama-4-maverick
 
+site:
+  hero_task: v2026.10-hard-010    # chosen at Checkpoint 3: GPT-6 Astra (open book) is late to the meet-up
+
 # Errand categories: OSM tag rules, which hours tag to trust, optional brand filters
 # (brand patterns are lowercase substrings of the name/brand tags).
 categories:

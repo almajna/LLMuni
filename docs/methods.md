@@ -95,19 +95,42 @@ is **invalid JSON**.
 `poi_id`; a store at the same house number and street; the best-named store within 150 m of the address,
 geocoded offline against the OSM extract (house numbers, else the nearest number on the same street, or a street
 intersection); and, only when there is no usable address, the name alone (a chain's branch nearest the
-previous stop). A stop that matches no store is **hallucinated**. A matched store whose hours are missing,
-unparseable or `unknown`, or a real store that OSM maps under a different category (a Safeway named for a
-pharmacy errand), is **unverifiable**: reported separately, never counted as feasible or infeasible.
+previous stop). A matched store whose hours are missing, unparseable or `unknown`, or a real store that OSM
+maps under a different category (a Safeway named for a pharmacy errand), is **unverifiable**: reported
+separately, never counted as feasible or infeasible.
+
+**Stores OSM does not have.** A stop that matches no OSM store is checked against a second, independent source:
+San Francisco's Registered Business Locations (DataSF `g8m3-pdis`, active locations only, pinned in
+`data/MANIFEST.json`). Names are compared after dropping store numbers and legal suffixes ("Walgreens #04529",
+"Bank of America, N.A."), with the same similarity threshold as name-only OSM matches, and names made only of
+category words ("Cafe", "Post Office") are never matched. Three outcomes:
+
+- **Not in OSM:** a business registered under that name at the given address (same number and street, or within
+  150 m of the geocoded point). A real store OSM lacks, so its hours cannot be checked: **unverifiable**, like a
+  store with unknown hours.
+- **Wrong address:** the name is mapped (OSM, any category) or registered elsewhere in San Francisco, but not at
+  the given address. The plan sends you somewhere the store is not: the plan is impossible.
+- **No such store:** the name is in neither source. This is what the leaderboard calls *hallucinated*
+  ("No such store"). A real store registered under a different legal name can land here, so the rate is an upper
+  bound.
+
+On the pilot's closed-book answers, the 156 stops the first grader called "hallucinated" split into 106 wrong
+addresses, 26 real stores missing from OSM and 24 stores found in neither source.
 
 **Replay.** The plan is replayed with the oracle's own simulator: FIFO travel, waiting for a store to open,
 service that must end before closing and before any deadline, and the arrive-by time at the end. A plan is
 **feasible** only if every stop verifies; otherwise it is **infeasible** (with the first failure: closed store,
-missed deadline, late arrival, unreachable), hallucinated, or unverifiable.
+missed deadline, late arrival, unreachable), **wrong address**, **hallucinated** (no such store), or
+**unverifiable**.
 
-**Metrics.** On feasible tasks: feasible %, impossible-plan % (infeasible or hallucinated), unverifiable %,
-false-"impossible" %, and the optimality gap `(model finish − optimal finish) / (optimal finish − start)` of
-feasible replays. On infeasible tasks: the share correctly declared impossible. Closed-book answers are
-measured against the all-SF optimum, open-book and tool answers against the listed-store optimum.
+**Metrics.** On feasible tasks: feasible %, impossible-plan % (infeasible, wrong address or no such store),
+unverifiable %, false-"impossible" %, and the optimality gap `(model finish − optimal finish) / (optimal finish −
+start)` of feasible replays. Over answers that propose a plan: no-such-store %, wrong-address % and not-in-OSM %
+(each: plans with at least one such stop). On infeasible tasks: the share correctly declared impossible.
+Closed-book answers are measured against the all-SF optimum, open-book and tool answers against the listed-store
+optimum. In closed book a plan is feasible only if every named store is found and verified open, so closed-book
+feasibility also depends on how much of the city OSM's opening hours cover; the failure breakdown on the site
+separates "can't be checked" from "impossible".
 
 ## 5. Evaluation
 
@@ -117,7 +140,16 @@ measured against the all-SF optimum, open-book and tool answers against the list
 - **Baselines** over the listed stores: greedy (always finish the next errand as early as possible, ignoring
   deadlines and the end) and random (random order and store).
 - Models run through OpenRouter at the provider's default temperature, one sample per task.
-- **Cost control.** Every run prints an estimate first. Every call reserves its worst case (prompt × 1.25 plus
-  `max_tokens` at the output price; reasoning tokens bill as output and count toward `max_tokens`), and is
-  refused unless spent + reserved + that worst case stays within `BUDGET_USD`; spend is settled with the cost
-  OpenRouter reports. Responses are cached per (model, mode, task), so nothing is paid for twice.
+- **Cost control.** Every run prints an estimate first. Every call reserves its worst case (prompt × 1.25 plus,
+  at the output price, the larger of `max_tokens` and 1.5× the model's largest completion so far, since some
+  providers let reasoning run past `max_tokens`). A call waits while other calls' reservations stand in the way
+  and is refused if it cannot fit within `BUDGET_USD` on its own; spend is settled with the cost OpenRouter
+  reports. `BUDGET_USD` caps total spend across all runs (the ledger in `results/answers/`). Responses are cached
+  per (settings, model, mode, task), so nothing is paid for twice.
+- **Balanced rounds.** The final subset runs in rounds of one task per tier (pilot first). A round starts only if
+  the budget left, after what already-started rounds are still expected to cost, covers 1.25× its expected cost
+  (measured per model, mode and tier). A budget stop therefore never leaves the tiers unbalanced or a task
+  answered by only some models; comparisons use the tasks every model answered.
+- **This release:** 30 tasks (the 15-task pilot plus rounds 6-10, 10 per tier), 7 models × closed and open book,
+  medium reasoning effort, `max_tokens` 8000, $27.14 in total. Tool mode is the optional v2 step
+  (`make finish TOOL_MODE=3`).

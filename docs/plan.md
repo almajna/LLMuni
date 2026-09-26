@@ -11,8 +11,8 @@ Source brief: [`errandarena-scope.md`](../errandarena-scope.md). The project is 
 | 3. Task generator | `make matrices`, `make tasks` | done |
 | 4. Oracle | `make oracle`, `make examples` | done; **Checkpoint 2** in `reports/checkpoint2.md` |
 | 5. Grader | (used by `make pilot` / `make eval`) | code and tests done |
-| 6. Evaluation | `make estimate`, `make pilot`, `make eval` | code done; pilot ends at **Checkpoint 3** |
-| 7. Site + video | `make site`, Remotion | ends at **Checkpoint 4** |
+| 6. Evaluation | `make estimate`, `make pilot`, `make eval` | done: pilot (**Checkpoint 3**) and final run, 30 tasks |
+| 7. Site + video | `make finish` / `make publish` | built overnight; Checkpoint 4 replaced by `reports/MORNING.md` |
 | 8. RL (optional) | | needs separate approval and a cost estimate |
 
 ## Decisions
@@ -55,3 +55,17 @@ Checkpoint 2 (2026-09-25): post offices are USPS only; libraries are SF Public L
 - Stop at every checkpoint with a report of at most 10 bullets; commit and push to `origin main` after each phase.
 - Never spend beyond `BUDGET_USD`; no GPU work without explicit approval.
 - Render the video with Remotion (not Puppeteer).
+
+## Checkpoint 3 decisions (2026-09-26)
+
+- **Budget:** no top-up; **$29 total cap** including the $13.14 already spent. Final run = closed + open book for
+  all 7 models on as many additional tasks as fit, balanced across tiers: rounds of one task per tier, each
+  admitted only if 1.25x its expected cost fits. Result: rounds 6-10 (15 new tasks, 30 in all, 10 per tier),
+  **$27.14 total**. Round 11 was refused with $1.86 left.
+- **Tool mode:** not run; kept in `make finish` as the optional v2 step (`TOOL_MODE=3`).
+- **Hero task:** v2026.10-hard-010 (GPT-6 Astra, open book, late to the meet-up).
+- **Site:** night dispatch console with a split-flap departure board for the leaderboard.
+- **Hallucination split:** "hallucinated" became *not in OSM* (unverifiable), *wrong address* and *no such store*,
+  using SF's Registered Business Locations as the second source.
+- **Overnight run (2026-09-26):** the user asked for an unattended build to launch-ready: design calls made
+  without Checkpoint 4, listed in `reports/MORNING.md` for veto. Never deploy, never make the repo public.

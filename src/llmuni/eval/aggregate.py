@@ -82,7 +82,7 @@ def headline(per_model: dict) -> dict:
             return None, None
         return (min if lowest else max)(scored, key=lambda kv: kv[1])
 
-    top_closed, _ = best("closed_book", "feasible_pct", lowest=False)
+    top_closed = closed_book_leader(per_model)
     open_model, gap_open = best("open_book", "median_gap", lowest=True)
     tool_model, gap_tool = best("tool_use", "median_gap", lowest=True)
     return {
@@ -96,6 +96,17 @@ def headline(per_model: dict) -> dict:
         "tool_mode_improvement_pct":
             round(100 * (gap_open - gap_tool) / gap_open, 1) if gap_open and gap_tool is not None else None,
     }
+
+
+def closed_book_leader(per_model: dict) -> str | None:
+    """Most feasible closed-book plans; ties (e.g. every model at 0%) go to fewer impossible plans, then fewer
+    invented stores, so the headline never names a model by list order."""
+    scored = [(m, modes["closed_book"]) for m, modes in per_model.items() if "closed_book" in modes]
+    if not scored:
+        return None
+    key = lambda kv: (-(kv[1]["feasible_pct"] or 0), kv[1]["impossible_plan_pct"] if kv[1]["impossible_plan_pct"] is not None else 101,
+                      kv[1]["hallucination_pct"] if kv[1]["hallucination_pct"] is not None else 101)  # noqa: E731
+    return min(scored, key=key)[0]
 
 
 def leaderboard(results: dict) -> list[dict]:
@@ -115,7 +126,11 @@ def leaderboard(results: dict) -> list[dict]:
                         "correct_infeasible_pct": s["correct_infeasible_pct"],
                         "false_infeasible_pct": s["false_infeasible_pct"], "invalid_json_pct": s["invalid_json_pct"],
                         "cost_per_task_usd": 0.0})
-    return sorted(entries, key=lambda e: (e["mode"], -(e["feasible_pct"] or 0), e["median_gap"] if e["median_gap"] is not None else 9e9))
+    def rank(e: dict) -> tuple:  # feasible first, then gap; ties (all 0% in closed book) on impossible, then invented
+        missing = lambda v, fill: fill if v is None else v  # noqa: E731
+        return (e["mode"], -missing(e["feasible_pct"], 0), missing(e["median_gap"], 9e9),
+                missing(e["impossible_plan_pct"], 101), missing(e["hallucination_pct"], 101))
+    return sorted(entries, key=rank)
 
 
 def write_results(cfg: Config, results: dict, run: str) -> None:

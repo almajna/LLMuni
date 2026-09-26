@@ -150,3 +150,13 @@ def test_summary_and_headline():
     assert s["correct_infeasible_pct"] == 100.0 and s["median_gap"] == 0.1 and s["cost_usd"] == 0.5
     h = headline({"m": {"closed_book": s, "open_book": s | {"median_gap": 0.2}, "tool_use": s | {"median_gap": 0.05}}})
     assert h["pct_impossible_best_model_closed_book"] == 50.0 and h["tool_mode_improvement_pct"] == 75.0
+
+
+def test_closed_book_headline_breaks_ties_on_impossible_plans_not_list_order():
+    from llmuni.eval.aggregate import headline
+
+    def s(feasible, impossible, invented):
+        return {"closed_book": {"feasible_pct": feasible, "impossible_plan_pct": impossible, "hallucination_pct": invented,
+                                "median_gap": None}}
+    h = headline({"a": s(0.0, 48.1, 11.1), "b": s(0.0, 22.2, 37.5), "c": s(0.0, 22.2, 3.7)})
+    assert h["best_model_closed_book"] == "c" and h["pct_impossible_best_model_closed_book"] == 22.2

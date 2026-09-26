@@ -120,6 +120,10 @@ class EvalConfig(BaseModel):
         return float(os.environ.get("BUDGET_USD", self.budget_usd))
 
 
+class SiteConfig(BaseModel):
+    hero_task: str | None = None  # the task the site's replay opens on and the video's hero
+
+
 class Config(BaseModel):
     project: str
     benchmark_version: str
@@ -131,6 +135,7 @@ class Config(BaseModel):
     router: RouterConfig
     tasks: TasksConfig
     eval: EvalConfig
+    site: SiteConfig = Field(default_factory=SiteConfig)
     categories: dict[str, CategorySpec]
 
     def rel(self, path: Path) -> str:

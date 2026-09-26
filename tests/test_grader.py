@@ -198,3 +198,15 @@ def test_generic_names_never_match_the_registry():
     assert not distinctive(core_name("The Coffee Shop")) and distinctive(core_name("Ritual Coffee"))
     assert not REGISTRY.near("Coffee", (37.7561, -122.4211), None, None, 150)  # "Cafe" is too generic to be a name
     assert not REGISTRY.anywhere("Blue Cafe")
+
+
+def test_a_store_that_cannot_exist_outranks_an_earlier_unverifiable_stop(registered):
+    g = registered.grade(make_task(), answer(("coffee", "Mystery Cafe", "somewhere downtown"),
+                                             ("pharmacy", "Imaginary Drugs", "100 Market St")), "closed_book")
+    assert g.status == "hallucinated" and g.unverifiable_stops == 1 and g.hallucinated_store
+
+
+def test_unverifiable_stop_alone_stays_unverifiable(registered):
+    g = registered.grade(make_task(), answer(("pharmacy", "Walgreens", "100 Market St"),
+                                             ("coffee", "Mystery Cafe", "somewhere downtown")), "closed_book")
+    assert g.status == "unverifiable"

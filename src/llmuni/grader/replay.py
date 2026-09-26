@@ -29,6 +29,7 @@ class Grade:
     claimed_feasible: bool | None = None
     failure: str | None = None
     finish: str | None = None
+    end_arrive: str | None = None  # replayed arrival at the end place, also when late
     optimality_gap: float | None = None
     hallucinated_store: bool = False  # names a store found in neither OSM nor the city's business registry
     wrong_address: bool = False  # names a real store at an address where it is not
@@ -70,23 +71,31 @@ class Grader:
             if match.lat is not None:
                 near = (match.lat, match.lon)
 
-        chosen, sequence, blocked = {}, [], None
+        # The replay runs up to the first stop it cannot check. A stop that cannot be visited as planned (a store
+        # that does not exist, a wrong address, a store closed all week) makes the plan impossible wherever it
+        # is, so it outranks an earlier stop that is merely unverifiable.
+        chosen, sequence, blocked, definite = {}, [], None, None
         for stop, match in zip(answer.stops, matches):
             e = errand_of[stop.category]
+            fatal = None
             if match.status == "hallucinated" and match.reason == "wrong_address":
-                blocked = ("wrong_address", f"no {stop.category} called {stop.store_name!r} at that address")
+                fatal = ("wrong_address", f"no {stop.category} called {stop.store_name!r} at that address")
             elif match.status == "hallucinated":
-                blocked = ("hallucinated", f"no {stop.category} called {stop.store_name!r} in San Francisco")
+                fatal = ("hallucinated", f"no {stop.category} called {stop.store_name!r} in San Francisco")
+            elif match.status == "matched" and match.hours_status == CLOSED_ALL_WEEK:
+                fatal = ("infeasible", f"closed: {stop.store_name} is closed all week")
+            definite = definite or fatal
+            if blocked:
+                continue
+            if fatal:
+                blocked = fatal
             elif match.status == "unverifiable":
                 blocked = ("unverifiable", f"{stop.store_name}: {match.reason}")
-            elif match.hours_status == CLOSED_ALL_WEEK:
-                blocked = ("infeasible", f"closed: {stop.store_name} is closed all week")
             elif not self.builder.routable(match.poi_id):
                 blocked = ("unverifiable", f"{stop.store_name}: not routable")
-            if blocked:
-                break
-            chosen[e] = match.poi_id
-            sequence.append(e)
+            else:
+                chosen[e] = match.poi_id
+                sequence.append(e)
 
         inst = self.builder.plan_instance(task, chosen)
         outcome = simulate(inst, [(e, int(inst.options[e][0])) for e in sequence])
@@ -97,8 +106,11 @@ class Grader:
                       unverifiable_stops=sum(m.status == "unverifiable" for m in matches),
                       correct_infeasible_call=False if impossible else None)
         grade.stops = self._stop_log(answer, matches, outcome)
+        grade.end_arrive = hhmm(outcome.end_arrive) if outcome.end_arrive is not None else None
         if outcome.failure_kind not in (None, "incomplete"):
             grade.status, grade.failure = "infeasible", outcome.failure  # broke before any blocked stop
+        elif definite:
+            grade.status, grade.failure = definite
         elif blocked:
             grade.status, grade.failure = blocked
         elif not outcome.feasible:

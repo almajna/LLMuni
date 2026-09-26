@@ -206,8 +206,9 @@ class Router:
         shutil.rmtree(parts)  # the finished matrix supersedes its partial blocks
         return TravelMatrix.load(path)
 
-    def itinerary(self, a: Place, b: Place, depart: datetime) -> list[dict]:
-        """Legs of the earliest-arriving trip from a to b leaving at depart (for visualization)."""
+    def itinerary(self, a: Place, b: Place, depart: datetime, window_min: int | None = None) -> list[dict]:
+        """Legs of the earliest-arriving trip from a to b leaving at depart (for visualization), searching
+        departures over `window_min` minutes (default: the matrix grid step)."""
         r5py = self._r5py
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
@@ -216,7 +217,7 @@ class Router:
                 origins=_points([a]),
                 destinations=_points([b]),
                 departure=depart,
-                departure_time_window=timedelta(minutes=self.params.departure_step_min),
+                departure_time_window=timedelta(minutes=window_min or self.params.departure_step_min),
                 transport_modes=[r5py.TransportMode.TRANSIT, r5py.TransportMode.WALK],
                 speed_walking=self.params.walk_speed_mps * 3.6,
                 max_time=timedelta(minutes=self.params.max_trip_minutes),
@@ -265,7 +266,8 @@ def matrix_cache_path(cfg: Config, places: list[Place], day: date, first: int, l
     sources = json.loads(cfg.paths.manifest.read_text(encoding="utf-8"))["sources"]
     params = cfg.router
     key = {
-        "inputs": {name: src["sha256"] for name, src in sources.items() if src.get("sha256")},
+        "inputs": {name: src["sha256"] for name, src in sources.items()  # routing inputs only
+                   if src.get("sha256") and (name.startswith("gtfs_") or name == "osm")},
         "places": [(p.id, round(p.lat, 6), round(p.lon, 6)) for p in places],
         "day": day.isoformat(),
         "grid": [first, last, params.departure_step_min],

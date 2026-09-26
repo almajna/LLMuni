@@ -24,12 +24,16 @@ def main(argv: list[str] | None = None) -> None:
     stages.add_parser("grader-check", help="round-trip optimal plans through the grader (name + address only)")
     stages.add_parser("heroes", help="hero-task candidates for the video from the pilot grades")
     sd = stages.add_parser("site-data", help="export site and video data from the latest results")
-    sd.add_argument("--hero", help="task id for the video's hero task (default: a placeholder)")
+    sd.add_argument("--hero", help="task id for the replay's default and the video's hero (default: site.hero_task)")
+    sd.add_argument("--routes", action="store_true", help="route every replayed hop with R5 first (cached; needs Java)")
+    stages.add_parser("readme", help="rewrite the README's headline and leaderboard blocks from the latest results")
+    stages.add_parser("video-basemap", help="the video's map plate (streets + rail) -> video/public/basemap.png")
     ev = stages.add_parser("eval", help="baselines + model runs (cached, total spend capped at BUDGET_USD) + grading")
     ev.add_argument("--subset", choices=["calibration", "pilot", "final"], default="pilot")
     ev.add_argument("--dry-run", action="store_true", help="write the cost estimate; call no model")
     ev.add_argument("--baselines-only", action="store_true", help="grade the free baselines only")
     ev.add_argument("--models", nargs="*", help="override eval.models")
+    ev.add_argument("--grade-only", action="store_true", help="grade cached answers only; call no model")
     ev.add_argument("--tool-models", type=int, help="final run: tool_use for the pilot's top N models "
                                                    "(default eval.tool_mode_models)")
 
@@ -74,9 +78,17 @@ def main(argv: list[str] | None = None) -> None:
     elif args.stage == "site-data":
         from llmuni.site.export import export_site_data
 
-        print(json.dumps(export_site_data(cfg, args.hero)))
+        print(json.dumps(export_site_data(cfg, args.hero, routes=args.routes)))
+    elif args.stage == "readme":
+        from llmuni.site.readme import run_readme
+
+        run_readme(cfg)
+    elif args.stage == "video-basemap":
+        from llmuni.site.basemap import run_basemap
+
+        print(json.dumps(run_basemap(cfg)))
     elif args.stage == "eval":
         from llmuni.eval.run import run_eval
 
         run_eval(cfg, subset=args.subset, dry_run=args.dry_run, baselines_only=args.baselines_only,
-                 models=args.models, tool_models=args.tool_models)
+                 models=args.models, tool_models=args.tool_models, grade_only=args.grade_only)

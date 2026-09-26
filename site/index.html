@@ -2,16 +2,149 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>LLMuni: can LLMs ride Muni?</title>
-    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>LLMuni · Can LLMs ride Muni?</title>
+    <meta name="description" content="A benchmark where language models plan real San Francisco errand days on Muni, BART and foot. Every plan is replayed on the real timetable against a provably optimal plan." />
+    <meta name="theme-color" content="#0b1110" />
+    <meta property="og:title" content="LLMuni · Can LLMs ride Muni?" />
+    <meta property="og:description" content="Language models plan real San Francisco errand days. Every plan is replayed on the Muni and BART timetable against the provably optimal plan." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
-    <header class="masthead">
-      <a class="wordmark" href="#/">LLMuni</a>
-      <nav><a href="#/">Leaderboard</a><a href="#/explore">Replays</a><a href="https://github.com/">Method</a></nav>
+    <a class="skip" href="#standings">Skip to the standings</a>
+    <header class="strip">
+      <a class="plate" href="#replay" aria-label="LLMuni, back to the replay"></a>
+      <h1 class="question">Can LLMs ride Muni?</h1>
+      <nav class="nav" aria-label="Sections">
+        <a href="#replay">Replay</a>
+        <a href="#standings">Standings</a>
+        <a href="#failures">Failures</a>
+        <a href="#method">Method</a>
+        <a href="https://github.com/almajna/LLMuni" rel="noopener">Code</a>
+      </nav>
     </header>
-    <main id="app" aria-live="polite"></main>
+
+    <main>
+      <section id="replay" class="wall" aria-label="Route replay">
+        <div class="map" role="img" aria-label="3D map of San Francisco replaying each model's route for the selected errand day"></div>
+
+        <div class="mount" aria-live="polite">
+          <p class="sr-only headline-text"></p>
+          <div class="message" aria-hidden="true"></div>
+          <p class="message-note"></p>
+        </div>
+
+        <aside class="rail" aria-label="Replay controls and units">
+          <p class="lede">Seven frontier models planned this San Francisco errand day. Every plan is replayed on the real Muni and BART timetable; <span class="gold">gold</span> is the provably optimal plan.</p>
+
+          <div class="ticket">
+            <div class="ticket-head">
+              <span class="label">Request</span>
+              <label class="task-pick"><span class="sr-only">Errand day</span><select class="task-select"></select></label>
+            </div>
+            <p class="ticket-meta"></p>
+            <p class="ticket-request"></p>
+            <ul class="ticket-errands" aria-label="Errands"></ul>
+            <p class="ticket-note"></p>
+          </div>
+
+          <div class="units">
+            <div class="units-head">
+              <span class="label">Units · <span class="mode-name">Open book</span></span>
+              <div class="switch mode-switch" role="group" aria-label="Mode">
+                <button type="button" data-mode="open_book" aria-pressed="true">Open book</button>
+                <button type="button" data-mode="closed_book" aria-pressed="false">Closed book</button>
+              </div>
+            </div>
+            <ol class="unit-list"></ol>
+          </div>
+
+          <div class="transport">
+            <button type="button" class="play" aria-pressed="false" aria-label="Play the replay">
+              <svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" /></svg>
+              <svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z" /></svg>
+            </button>
+            <input class="scrub" type="range" aria-label="Replay time" />
+            <span class="clock-flaps" aria-hidden="true"></span>
+            <span class="sr-only clock-text" aria-live="off"></span>
+            <button type="button" class="speed" aria-label="Replay speed 1×">1×</button>
+          </div>
+        </aside>
+      </section>
+
+      <section id="standings" class="standings" aria-labelledby="standings-title">
+        <div class="section-head">
+          <div>
+            <h2 id="standings-title">Standings</h2>
+            <p class="board-caption"></p>
+          </div>
+          <div class="controls">
+            <div class="switch mode-switch" role="group" aria-label="Mode">
+              <button type="button" data-mode="open_book" aria-pressed="true">Open book</button>
+              <button type="button" data-mode="closed_book" aria-pressed="false">Closed book</button>
+            </div>
+            <div class="switch tier-switch" role="group" aria-label="Difficulty">
+              <button type="button" data-tier="all" aria-pressed="true">All</button>
+              <button type="button" data-tier="easy" aria-pressed="false">Easy</button>
+              <button type="button" data-tier="medium" aria-pressed="false">Medium</button>
+              <button type="button" data-tier="hard" aria-pressed="false">Hard</button>
+            </div>
+          </div>
+        </div>
+        <p class="mode-help"></p>
+        <div class="board-frame">
+          <table class="board"><caption class="sr-only">Standings: one row per model for the selected mode and difficulty</caption></table>
+        </div>
+        <dl class="legend">
+          <div><dt>Feasible</dt><dd>The plan replays on the real timetable with every store open, every deadline met, and the meet-up reached on time. Share of the feasible tasks.</dd></div>
+          <div><dt>Vs optimal</dt><dd>Median extra time over the provably optimal plan, among feasible plans: (model finish − optimal finish) ÷ (optimal finish − start).</dd></div>
+          <div><dt>Impossible</dt><dd>Plans that break: a closed store, a missed deadline, a late arrival, a wrong address or a store that doesn't exist.</dd></div>
+          <div><dt>No such store · Wrong address</dt><dd>Plans naming a store found in neither OpenStreetMap nor the city's business registry; plans sending you to a real store's wrong address.</dd></div>
+          <div><dt>Spots impossible</dt><dd>On tasks that are impossible by design, how often the model said so.</dd></div>
+          <div><dt>$ / task</dt><dd>What one answer cost through OpenRouter, reasoning included.</dd></div>
+        </dl>
+      </section>
+
+      <section id="failures" class="failures" aria-labelledby="failures-title">
+        <div class="section-head">
+          <div>
+            <h2 id="failures-title">How plans fail</h2>
+            <p class="fail-caption"></p>
+          </div>
+        </div>
+        <div class="fail-figure" role="list"></div>
+        <ul class="fail-legend"></ul>
+      </section>
+
+      <section id="method" class="method" aria-labelledby="method-title">
+        <h2 id="method-title">Method</h2>
+        <ol class="steps">
+          <li><h3>Real city, real week</h3><p>Muni and BART timetables (GTFS) for a fixed week, and San Francisco's stores from OpenStreetMap with parseable opening hours.</p></li>
+          <li><h3>Door to door</h3><p>R5 routes every trip on foot, bus, rail and BART, on a five-minute departure grid, so every plan and the optimum share one clock.</p></li>
+          <li><h3>Errand days</h3><p>Three hundred seeded tasks in three tiers: stores to visit, closing times, deadlines and a meet-up. One in ten is impossible by design.</p></li>
+          <li><h3>Provable optimum</h3><p>An exact search over errands done and places reached finds the fastest plan; brute force and an integer program agree with it.</p></li>
+          <li><h3>Replay</h3><p>Each answer is matched to real stores and replayed on the timetable. Stores missing from OpenStreetMap are checked against the city's business registry.</p></li>
+        </ol>
+        <div class="method-foot">
+          <div class="facts"><h3>This run</h3><dl class="run-facts"></dl></div>
+          <div class="limits">
+            <h3>Limits</h3>
+            <ul>
+              <li>Scheduled timetables, not real-time: no delays are modelled.</li>
+              <li>OpenStreetMap hours can be incomplete or out of date; tasks only use stores with parseable hours.</li>
+              <li>Walking speed (1.3 m/s) and time spent in each store are assumptions.</li>
+              <li>Each model answers each task once, at its default temperature, with medium reasoning effort.</li>
+            </ul>
+            <p><a href="https://github.com/almajna/LLMuni/blob/main/docs/methods.md" rel="noopener">Full method</a></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <p class="provenance"></p>
+      <p>Independent research. Not affiliated with SFMTA, Muni or BART. Map data © OpenStreetMap contributors, tiles by OpenFreeMap.</p>
+    </footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

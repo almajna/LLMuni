@@ -37,13 +37,13 @@ SUBSETS = ("calibration", "pilot", "final")
 
 
 def run_eval(cfg: Config, *, subset: str, dry_run: bool = False, baselines_only: bool = False,
-             models: list[str] | None = None, tool_models: int | None = None) -> dict | None:
+             models: list[str] | None = None, tool_models: int | None = None, grade_only: bool = False) -> dict | None:
     tasks = subset_tasks(cfg, subset)
     models = [] if baselines_only else (models or cfg.eval.models)
     plan = run_plan(cfg, subset, models, tool_models)  # {mode: [models]}
     todo = [(model, mode, task) for task in tasks for mode, ms in plan.items() for model in ms
             if not transcript_path(cfg, model, mode, task).exists()]
-    if models:
+    if models and not grade_only:
         info = fetch_models(models)
         calls = call_estimates(cfg, todo, info)
         ledger = Ledger(ledger_path(cfg), cfg.eval.budget())

@@ -223,3 +223,8 @@ cache/
 *.osm.pbf
 .tools/
 node_modules/
+
+# impeccable review captures (final ones are copied to reports/phase7/)
+.impeccable/review/
+# Remotion render scratch
+video/out/*.png

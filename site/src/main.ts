@@ -1,140 +1,146 @@
-import maplibregl from "maplibre-gl";
+import "@fontsource/barlow/400.css";
+import "@fontsource/barlow/500.css";
+import "@fontsource/barlow/600.css";
+import "@fontsource/barlow-condensed/500.css";
+import "@fontsource/barlow-condensed/600.css";
+import "@fontsource/barlow-condensed/700.css";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { MapboxOverlay } from "@deck.gl/mapbox";
-import { TripsLayer } from "@deck.gl/geo-layers";
-import { ScatterplotLayer, TextLayer } from "@deck.gl/layers";
+import "./styles.css";
+import { Board } from "./board";
+import { renderFailures } from "./failures";
+import { Flaps } from "./flaps";
+import { Replay } from "./replay";
+import { type Bundle, MODE_LABEL, gap, loadBundle, modelName, pct } from "./data";
 
-type XY = [number, number];
-interface Stop { category: string; name: string; at: XY | null; arrive: number | null; done: number | null; failed?: string | null; match?: string }
-interface Plan { model: string; mode: string; baseline: boolean; status: string; failure: string | null; gap: number | null; finish: number | null; stops: Stop[] }
-interface OraclePlan { finish: number; end_arrive: number | null; stops: Stop[] }
-interface TaskInfo { id: string; tier: string; weekday: string; prompt: string; infeasible: boolean; reason: string | null;
-  start: { label: string; at: XY; depart: number }; end: { label: string; at: XY; arrive_by: number | null } | null }
-interface Summary { feasible_pct: number | null; median_gap: number | null; impossible_plan_pct: number | null; hallucination_pct: number | null;
-  correct_infeasible_pct: number | null; cost_usd: number; tasks: number; by_tier?: Record<string, Summary> }
-
-const MODES = ["closed_book", "open_book", "tool_use"] as const;
-const MODE_LABEL: Record<string, string> = { closed_book: "Closed book", open_book: "Open book", tool_use: "With travel tool" };
-const GOLD: [number, number, number] = [237, 161, 0];
-const FAIL: [number, number, number] = [208, 59, 59];
-const SERIES: [number, number, number][] = [[42, 120, 214], [27, 175, 122], [232, 123, 164], [74, 58, 167], [0, 131, 0], [235, 104, 52], [137, 135, 129]];
-
-const load = (name: string) => fetch(`/data/${name}.json`).then((r) => r.json());
-const [meta, results, tasks, plans] = await Promise.all([load("meta"), load("results"), load("tasks"), load("plans")]);
-const app = document.getElementById("app")!;
-const clock = (m: number | null) => (m == null ? "—" : `${Math.floor(m / 60) % 24}:${String(Math.round(m % 60)).padStart(2, "0")}`);
-const pct = (v: number | null) => (v == null ? "—" : `${v.toFixed(0)}%`);
-const short = (model: string) => model.replace(/^.*\//, "").replace(/^baseline:/, "");
-
-function route() {
-  const [, page, id] = location.hash.split("/");
-  if (page === "explore") explorer(id || tasks.find((t: TaskInfo) => !t.infeasible)?.id);
-  else leaderboard(new URLSearchParams(location.hash.split("?")[1] ?? "").get("mode") ?? "open_book");
+interface State {
+  task: string;
+  mode: string;
+  tier: string;
 }
 
-function leaderboard(mode: string) {
-  const h = results.headline;
-  const rows: [string, Summary][] = Object.entries(results.per_model as Record<string, Record<string, Summary>>)
-    .filter(([, m]) => m[mode]).map(([name, m]) => [name, m[mode]]);
-  if (mode === "open_book") rows.push(...Object.entries(results.baselines as Record<string, Summary>).map(([n, s]) => [`baseline:${n}`, s] as [string, Summary]));
-  rows.sort((a, b) => (b[1].feasible_pct ?? -1) - (a[1].feasible_pct ?? -1) || (a[1].median_gap ?? 9) - (b[1].median_gap ?? 9));
-  app.innerHTML = `
-    <section class="headline">
-      <p class="kicker">${meta.run === "final" ? "Results" : `Pilot: ${meta.tasks} tasks`} · ${meta.benchmark_version} · timetable of ${meta.osm_date}</p>
-      <div class="stats">
-        <div><b>${pct(h.pct_impossible_best_model_closed_book)}</b><span>of the best model's closed-book plans were impossible</span></div>
-        <div><b>${h.best_gap_open_book == null ? "—" : `+${Math.round(h.best_gap_open_book * 100)}%`}</b><span>best open-book plan vs optimal (median)</span></div>
-        <div><b>${h.best_gap_tool_mode == null ? "—" : `+${Math.round(h.best_gap_tool_mode * 100)}%`}</b><span>with a travel-time tool</span></div>
-      </div>
-    </section>
-    <nav class="tabs">${MODES.map((m) => `<a href="#/?mode=${m}" aria-current="${m === mode}">${MODE_LABEL[m]}</a>`).join("")}</nav>
-    <table class="board">
-      <thead><tr><th>Model</th><th>Feasible</th><th>Median gap</th><th>Impossible</th><th>Invented stores</th><th>Said "impossible" correctly</th><th>Easy / med / hard</th></tr></thead>
-      <tbody>${rows.map(([name, s]) => `<tr class="${name.startsWith("baseline") ? "baseline" : ""}">
-        <td>${short(name)}</td><td>${pct(s.feasible_pct)}</td><td>${s.median_gap == null ? "—" : `+${Math.round(s.median_gap * 100)}%`}</td>
-        <td>${pct(s.impossible_plan_pct)}</td><td>${pct(s.hallucination_pct)}</td><td>${pct(s.correct_infeasible_pct)}</td>
-        <td>${["easy", "medium", "hard"].map((t) => pct(s.by_tier?.[t]?.feasible_pct ?? null)).join(" / ")}</td></tr>`).join("")}</tbody>
-    </table>
-    <p class="note">Feasible: the plan replays on the real timetable with every store open and every deadline met. Gap: extra time vs the provably optimal plan. n = ${meta.tasks} tasks.</p>`;
-}
+const MODE_HELP: Record<string, string> = {
+  open_book: "Open book: the request lists candidate stores with their addresses, opening hours and coordinates. The model still has to work out travel times itself.",
+  closed_book: "Closed book: the request names only the errands. The model has to know real San Francisco stores, their addresses and their hours.",
+};
 
-/** [lon, lat, minute] waypoints: leave the start, travel to each stop, wait there until done, then the end. */
-function waypoints(task: TaskInfo, stops: Stop[], endArrive: number | null): [number, number, number][] {
-  const pts: [number, number, number][] = [[...task.start.at, task.start.depart]];
-  for (const s of stops) {
-    if (!s.at || s.arrive == null) break;
-    pts.push([...s.at, s.arrive]);
-    if (s.done != null) pts.push([...s.at, s.done]);
-    if (s.failed) break;
+const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+
+async function start() {
+  const plate = new Flaps(6, { size: "s" });
+  $(".plate").append(plate.el);
+  plate.set("LLMUNI", { stagger: 40, steps: 5, stepMs: 60 });
+
+  let data: Bundle;
+  try {
+    data = await loadBundle();
+  } catch (err) {
+    document.body.classList.add("is-error");
+    $(".lede").textContent = `The results could not be loaded (${(err as Error).message}). Run \`npm run data\` in site/ to export them.`;
+    return;
   }
-  if (task.end && endArrive != null) pts.push([...task.end.at, endArrive]);
-  return pts;
+  await document.fonts.ready;
+
+  const message = new Flaps(34, { size: "s" });
+  $(".message").append(message.el);
+  const tasks = data.tasks.slice().sort((a, b) => ["easy", "medium", "hard"].indexOf(a.tier) - ["easy", "medium", "hard"].indexOf(b.tier) || a.id.localeCompare(b.id));
+  $<HTMLSelectElement>(".task-select").innerHTML = ["easy", "medium", "hard"].map((tier) => `<optgroup label="${tier[0].toUpperCase()}${tier.slice(1)}">${
+    tasks.filter((t) => t.tier === tier).map((t) => `<option value="${t.id}">${t.id.replace(/^v[\d.]+-/, "")} · ${t.weekday.slice(0, 3)} · ${t.errands.length} errands${t.infeasible ? " · impossible" : ""}</option>`).join("")
+  }</optgroup>`).join("");
+
+  const board = new Board(data, $<HTMLTableElement>(".board"), $(".board-caption"));
+  const replay = new Replay(data, $("#replay"), (task, mode) => go({ ...state, task, mode }));
+  const hero = data.meta.hero_task && data.plans[data.meta.hero_task] ? data.meta.hero_task : tasks[0].id;
+  let state: State = { task: hero, mode: "open_book", tier: "all", ...readHash(data) };
+  let boardSeen = false;
+  let first = true;
+
+  function readHash(d: Bundle): Partial<State> {
+    const q = new URLSearchParams(location.hash.slice(1).replace(/^[^=]*$/, ""));
+    const out: Partial<State> = {};
+    const task = q.get("task");
+    if (task && d.plans[task]) out.task = task;
+    else if (task && d.plans[`${d.meta.benchmark_version}-${task}`]) out.task = `${d.meta.benchmark_version}-${task}`;
+    if (q.get("mode") && MODE_LABEL[q.get("mode")!]) out.mode = q.get("mode")!;
+    if (["all", "easy", "medium", "hard"].includes(q.get("tier") ?? "")) out.tier = q.get("tier")!;
+    return out;
+  }
+
+  function go(next: State) {
+    const params = new URLSearchParams({ task: next.task.replace(`${data.meta.benchmark_version}-`, ""), mode: next.mode, tier: next.tier });
+    history.replaceState(null, "", `#${params}`);
+    apply(next);
+  }
+
+  function apply(next: State) {
+    const replayChanged = first || next.task !== state.task || next.mode !== state.mode;
+    const boardChanged = first || next.mode !== state.mode || next.tier !== state.tier;
+    state = next;
+    if (replayChanged) replay.show(state.task, state.mode, first);
+    if (boardChanged && boardSeen) board.show(state.mode, state.tier);
+    document.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode)));
+    document.querySelectorAll<HTMLButtonElement>("[data-tier]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tier === state.tier)));
+    $(".mode-help").textContent = MODE_HELP[state.mode] ?? "";
+    renderFailures(data, state.mode, $(".fail-figure"), $(".fail-legend"));
+    $(".fail-caption").textContent = `${MODE_LABEL[state.mode]}, ${data.meta.feasible_tasks} feasible tasks per model. What became of each plan when it was replayed.`;
+    const headline = headlineFor(data, state.mode);
+    $(".headline-text").textContent = `${headline.text}. ${headline.note}`;
+    message.set(headline.text, { stagger: 16, steps: 4, stepMs: 60, delay: first ? 400 : 0 });
+    $(".message-note").textContent = headline.note;
+    first = false;
+  }
+
+  document.querySelectorAll<HTMLButtonElement>(".standings [data-mode]").forEach((b) =>
+    b.addEventListener("click", () => go({ ...state, mode: b.dataset.mode! })));
+  document.querySelectorAll<HTMLButtonElement>("[data-tier]").forEach((b) =>
+    b.addEventListener("click", () => go({ ...state, tier: b.dataset.tier! })));
+
+  new IntersectionObserver((entries, obs) => {
+    if (entries.some((e) => e.isIntersecting)) {
+      boardSeen = true;
+      board.show(state.mode, state.tier);
+      obs.disconnect();
+    }
+  }, { threshold: 0.25 }).observe($(".board-frame"));
+
+  addEventListener("hashchange", () => apply({ ...state, ...readHash(data) }));
+  apply(state);
+  renderFacts(data);
 }
 
-let map: maplibregl.Map | null = null;
-let overlay: MapboxOverlay | null = null;
+function headlineFor(data: Bundle, mode: string): { text: string; note: string } {
+  const run = data.meta.run === "final" ? "" : ` (${data.meta.run} run)`;
+  const rows = Object.entries(data.results.per_model).filter(([, m]) => m[mode]).map(([id, m]) => ({ id, s: m[mode] }));
+  if (mode === "closed_book") {
+    const best = Math.max(...rows.map((r) => r.s.feasible_pct ?? 0));
+    const worked = rows.filter((r) => (r.s.feasible_pct ?? 0) > 0).length;
+    return {
+      text: best > 0 ? `Closed book: best model ${pct(best)} feasible` : `Closed book: 0 working plans`,
+      note: `${worked} of ${rows.length} models produced any plan that works without a store list${run}.`,
+    };
+  }
+  const feasible = rows.filter((r) => r.s.median_gap != null).sort((a, b) =>
+    (b.s.feasible_pct ?? 0) - (a.s.feasible_pct ?? 0) || (a.s.median_gap ?? 9) - (b.s.median_gap ?? 9));
+  const top = feasible[0];
+  if (!top) return { text: "No feasible plans yet", note: "" };
+  return {
+    text: `${modelName(top.id)}: ${pct(top.s.feasible_pct)} feasible, ${gap(top.s.median_gap)}`,
+    note: `Top of the open-book standings: feasible share, then median extra time over the optimal plan${run}.`,
+  };
+}
 
-function explorer(id: string) {
-  const task: TaskInfo = tasks.find((t: TaskInfo) => t.id === id);
-  const entry = plans[id];
-  const modelPlans: Plan[] = entry.plans.filter((p: Plan) => !p.baseline && p.mode !== "closed_book");
-  const optimal: OraclePlan | null = entry.optimal;
-  const trips = [
-    ...(optimal ? [{ name: "Optimal", color: GOLD, path: waypoints(task, optimal.stops, optimal.end_arrive), width: 7 }] : []),
-    ...modelPlans.map((p, i) => ({ name: short(p.model), color: SERIES[i % SERIES.length],
-      path: waypoints(task, p.stops, p.status === "feasible" && task.end ? p.finish : null), width: 4 })),
+function renderFacts(data: Bundle) {
+  const m = data.meta;
+  const days = (r: [string, string]) => `${r[0]} to ${r[1]}`;
+  const facts: [string, string][] = [
+    ["Run", m.run === "final" ? "Final" : `${m.run[0].toUpperCase()}${m.run.slice(1)}`],
+    ["Tasks", `${m.tasks} (${Object.entries(m.tasks_by_tier).map(([t, n]) => `${n} ${t}`).join(", ")})`],
+    ["Models", `${m.models.length}, plus greedy and random baselines`],
+    ["Model spend", m.spend_usd_total != null ? `$${m.spend_usd_total.toFixed(2)} in total` : "—"],
+    ["Timetables", Object.entries(m.gtfs_versions).map(([k, v]) => `${k.toUpperCase()} ${days(v)}`).join("; ")],
+    ["Map data", `OpenStreetMap, ${m.osm_date}`],
   ];
-  const failures = modelPlans.flatMap((p) => p.stops.filter((s) => s.failed && s.at).map((s) => ({ at: s.at!, time: s.arrive!, label: s.failed!.toUpperCase() })));
-  const t0 = task.start.depart;
-  const t1 = Math.max(...trips.flatMap((t) => t.path.map((w) => w[2])));
-  app.innerHTML = `
-    <section class="explorer">
-      <aside class="panel">
-        <select id="task">${tasks.map((t: TaskInfo) => `<option value="${t.id}" ${t.id === id ? "selected" : ""}>${t.id.replace(/^v[\d.]+-/, "")}${t.infeasible ? " (impossible)" : ""}</option>`).join("")}</select>
-        <p class="prompt">${task.prompt}</p>
-        <ol class="clocks">
-          ${optimal ? `<li class="optimal"><span>Optimal</span><b>${clock(optimal.finish)}</b></li>` : ""}
-          ${modelPlans.map((p) => `<li class="${p.status}"><span>${short(p.model)}</span><b>${p.status === "feasible" ? clock(p.finish) : p.status}</b></li>`).join("")}
-        </ol>
-        <div class="scrub"><button id="play" aria-label="Play or pause">Play</button><input id="time" type="range" min="${t0}" max="${t1}" value="${t0}" step="0.5" /><output id="now">${clock(t0)}</output></div>
-      </aside>
-      <div id="map" class="map" role="img" aria-label="Replay of each model's route across San Francisco"></div>
-    </section>`;
-  document.getElementById("task")!.addEventListener("change", (e) => (location.hash = `#/explore/${(e.target as HTMLSelectElement).value}`));
-  map?.remove();
-  map = new maplibregl.Map({ container: "map", style: "https://tiles.openfreemap.org/styles/dark", center: task.start.at, zoom: 12.6, pitch: 55, bearing: -17 });
-  map.on("load", () => {
-    map!.addLayer({ id: "buildings-3d", type: "fill-extrusion", source: "openmaptiles", "source-layer": "building", minzoom: 12,
-      paint: { "fill-extrusion-color": "#2a2a2e", "fill-extrusion-height": ["coalesce", ["get", "render_height"], 8], "fill-extrusion-opacity": 0.8 } });
-  });
-  overlay = new MapboxOverlay({ layers: [] });
-  map.addControl(overlay as unknown as maplibregl.IControl);
-
-  const slider = document.getElementById("time") as HTMLInputElement;
-  const now = document.getElementById("now")!;
-  let playing = false;
-  const draw = (t: number) => {
-    now.textContent = clock(t);
-    overlay!.setProps({ layers: [
-      new TripsLayer({ id: "trips", data: trips, getPath: (d) => d.path.map((w: number[]) => [w[0], w[1]]), getTimestamps: (d) => d.path.map((w: number[]) => w[2]),
-        getColor: (d) => d.color, getWidth: (d) => d.width, widthUnits: "pixels", trailLength: 90, currentTime: t, capRounded: true, jointRounded: true }),
-      new ScatterplotLayer({ id: "failures", data: failures.filter((f) => t >= f.time), getPosition: (f) => f.at, getFillColor: FAIL,
-        getRadius: 60 + 40 * Math.abs(Math.sin(t * 0.8)), radiusUnits: "meters", opacity: 0.8 }),
-      new TextLayer({ id: "failure-labels", data: failures.filter((f) => t >= f.time), getPosition: (f) => f.at, getText: (f) => f.label,
-        getColor: [255, 255, 255], getSize: 13, getPixelOffset: [0, -22] }),
-    ] });
-  };
-  slider.addEventListener("input", () => draw(Number(slider.value)));
-  document.getElementById("play")!.addEventListener("click", () => { playing = !playing; if (playing) tick(); });
-  const tick = () => {
-    if (!playing) return;
-    const t = Number(slider.value) + 0.4;
-    slider.value = String(t > t1 ? t0 : t);
-    draw(Number(slider.value));
-    requestAnimationFrame(tick);
-  };
-  draw(t0);
+  $(".run-facts").innerHTML = facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+  $(".provenance").textContent = `LLMuni ${m.benchmark_version}. Results from the ${m.run} run over ${m.tasks} tasks; OpenStreetMap of ${m.osm_date}${m.registry_date ? `; business registry of ${m.registry_date}` : ""}.`;
 }
 
-addEventListener("hashchange", route);
-route();
+start();
