@@ -70,14 +70,32 @@ class Matrices:
         service_day = self.days[day]
         if service_day not in self._loaded:
             path = matrix_cache_path(self.cfg, self.places, service_day, self.first, self.last)
+            superset = self._cached_superset(service_day)
             if (path / "meta.json").exists():
                 self._loaded[service_day] = TravelMatrix.load(path)
+            elif superset is not None:
+                log.info("using cached matrix %s (covers all %d places)", superset.name, len(self.places))
+                self._loaded[service_day] = TravelMatrix.load(superset)
             else:
                 log.info("computing the %s matrix: %d places x %d departures (R5)", service_day,
                          len(self.places), (self.last - self.first) // self.cfg.router.departure_step_min + 1)
                 self._router = self._router or Router(self.cfg)
                 self._loaded[service_day] = self._router.matrix(self.places, service_day, self.first, self.last)
         return self._loaded[service_day]
+
+    def _cached_superset(self, service_day: date):
+        """A cached matrix for the day and grid that already covers every place (with the same
+        coordinates): removing stores from the benchmark then needs no new R5 searches."""
+        wanted = {p.id: (round(p.lat, 6), round(p.lon, 6)) for p in self.places}
+        for meta_file in sorted((self.cfg.paths.cache / "router").glob(f"{service_day:%Y%m%d}_*/meta.json")):
+            meta = json.loads(meta_file.read_text(encoding="utf-8"))
+            if meta["start"] != self.first or meta["step"] != self.cfg.router.departure_step_min:
+                continue
+            coords = meta.get("coords")  # recorded by newer matrices; older ones carry ids only
+            if set(wanted) <= set(meta["ids"]) and (coords is None or all(
+                    tuple(coords[meta["ids"].index(i)]) == c for i, c in wanted.items())):
+                return meta_file.parent
+        return None
 
     def precompute(self) -> None:
         for service_day in sorted(set(self.days.values())):

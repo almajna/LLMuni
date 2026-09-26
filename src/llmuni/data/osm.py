@@ -23,11 +23,13 @@ def classify(tags: dict[str, str], categories: dict[str, CategorySpec]) -> list[
 
 
 def _matches(tags: dict[str, str], spec: CategorySpec) -> bool:
+    text = " ".join(tags.get(k, "") for k in ("name", "brand", "operator")).lower()
+    if spec.require_any and not any(p in text for p in spec.require_any):
+        return False
     if any(tags.get(k) in vals for k, vals in spec.tags.items()):
         return True
     branded = spec.branded_tags
     if branded and any(tags.get(k) in vals for k, vals in branded.tags.items()):
-        text = " ".join(tags.get(k, "") for k in ("name", "brand", "operator")).lower()
         return any(brand in text for brand in branded.brands)
     return False
 

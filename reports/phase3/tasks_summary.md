@@ -1,16 +1,16 @@
 # Phase 3: task set v2026.10
 
-300 tasks, pilot subset of 50 (benchmark/v2026.10/pilot_ids.json).
+300 tasks, pilot subset of 15 (benchmark/v2026.10/pilot_ids.json).
 
 | tier | tasks | infeasible | by mode | errands (mean) | with end | with deadlines | branded | closing soon |
 |---|---|---|---|---|---|---|---|---|
-| easy | 100 | 10 | closed 3, deadline_too_early 3, end_too_early 4 | 3.0 | 30 | 3 | 5 | 0 |
-| medium | 100 | 10 | closed 3, deadline_too_early 3, end_too_early 4 | 4.5 | 47 | 3 | 5 | 97 |
-| hard | 100 | 10 | closed 3, deadline_too_early 3, end_too_early 4 | 6.5 | 100 | 97 | 27 | 0 |
+| easy | 100 | 10 | closed 3, deadline_too_early 3, end_too_early 4 | 3.0 | 32 | 3 | 5 | 0 |
+| medium | 100 | 10 | closed 3, deadline_too_early 3, end_too_early 4 | 4.5 | 46 | 3 | 7 | 97 |
+| hard | 100 | 10 | closed 3, deadline_too_early 3, end_too_early 4 | 6.5 | 100 | 97 | 26 | 0 |
 
-Errands per category: hardware 128, bank_atm 127, florist 123, supermarket 121, library 120, post_office 119, bakery 116, coffee 113, pharmacy 112, bookstore 109, bike_shop 106, dry_cleaning 102.
+Errands per category: hardware 129, bank_atm 128, supermarket 123, library 122, florist 121, coffee 118, pharmacy 114, bakery 114, post_office 110, bookstore 109, bike_shop 106, dry_cleaning 102.
 
-Weekdays: Monday 31, Tuesday 38, Wednesday 35, Thursday 50, Friday 47, Saturday 51, Sunday 48.
+Weekdays: Monday 34, Tuesday 40, Wednesday 37, Thursday 51, Friday 50, Saturday 54, Sunday 34.
 
 ## Example prompts
 

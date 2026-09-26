@@ -9,11 +9,11 @@ only valid places become task candidates. *Unknown* places parse but contain `un
 | Category | POIs | Hours tagged | Parseable | Unknown | Valid | % valid | Kept |
 |---|---:|---:|---:|---:|---:|---:|:---:|
 | Pharmacy | 51 | 25 | 25 | 0 | 25 | 49.0 | yes |
-| Post office | 86 | 41 | 41 | 0 | 41 | 47.7 | yes |
+| Post office | 40 | 16 | 16 | 0 | 16 | 40.0 | yes |
 | Supermarket | 120 | 77 | 77 | 0 | 77 | 64.2 | yes |
 | Hardware | 53 | 30 | 30 | 0 | 30 | 56.6 | yes |
 | Bank / ATM | 323 | 123 | 123 | 0 | 122 | 37.8 | yes |
-| Library | 48 | 23 | 23 | 0 | 23 | 47.9 | yes |
+| Library | 29 | 15 | 15 | 0 | 15 | 51.7 | yes |
 | Coffee | 793 | 423 | 422 | 0 | 421 | 53.1 | yes |
 | Bakery | 142 | 76 | 76 | 0 | 76 | 53.5 | yes |
 | Dry cleaning | 126 | 39 | 39 | 0 | 39 | 31.0 | yes |
@@ -21,6 +21,6 @@ only valid places become task candidates. *Unknown* places parse but contain `un
 | Florist | 69 | 21 | 21 | 0 | 20 | 29.0 | yes |
 | Bike shop | 43 | 26 | 25 | 0 | 25 | 58.1 | yes |
 | Electronics | 15 | 7 | 6 | 0 | 6 | 40.0 | **no** |
-| **All** | 1930 | 949 | 946 | 0 | 943 | 48.9 | |
+| **All** | 1865 | 916 | 913 | 0 | 910 | 48.8 | |
 
 Supermarket brands with valid hours: Safeway 13, Whole Foods Market 9, Trader Joe's 7.

@@ -24,6 +24,14 @@ def test_chemist_counts_as_pharmacy_only_for_counter_chains():
     assert classify({"shop": "chemist", "name": "Sephora"}, CATEGORIES) == []
 
 
+def test_require_any_keeps_only_matching_operators_or_names():
+    spec = {"post_office": CategorySpec(tags={"amenity": ["post_office"]},
+                                        require_any=["united states postal service", "post office", " station"])}
+    assert classify({"amenity": "post_office", "name": "Rincon Station"}, spec) == ["post_office"]
+    assert classify({"amenity": "post_office", "name": "X", "operator": "United States Postal Service"}, spec) == ["post_office"]
+    assert classify({"amenity": "post_office", "name": "The UPS Store", "brand": "The UPS Store"}, spec) == []
+
+
 def test_pharmacy_counter_hours_win_over_store_hours():
     tags = {"amenity": "pharmacy", "opening_hours": "Mo-Su 07:00-22:00", "opening_hours:pharmacy": "Mo-Fr 09:00-21:00"}
     assert hours_tag(tags, CATEGORIES["pharmacy"]) == ("opening_hours:pharmacy", "Mo-Fr 09:00-21:00")

@@ -111,7 +111,7 @@ def leaderboard(results: dict) -> list[dict]:
 
 
 def write_results(cfg: Config, results: dict, run: str) -> None:
-    out = cfg.root / "results" if run == "full" else cfg.root / "results" / run
+    out = cfg.root / "results" if run == "final" else cfg.root / "results" / run
     out.mkdir(parents=True, exist_ok=True)
     (out / "results.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
     board = leaderboard(results)

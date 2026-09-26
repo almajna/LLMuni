@@ -1,10 +1,10 @@
 category,pois,with_hours_tag,parseable,unknown,valid,pct_valid,kept
 pharmacy,51,25,25,0,25,49.0,True
-post_office,86,41,41,0,41,47.7,True
+post_office,40,16,16,0,16,40.0,True
 supermarket,120,77,77,0,77,64.2,True
 hardware,53,30,30,0,30,56.6,True
 bank_atm,323,123,123,0,122,37.8,True
-library,48,23,23,0,23,47.9,True
+library,29,15,15,0,15,51.7,True
 coffee,793,423,422,0,421,53.1,True
 bakery,142,76,76,0,76,53.5,True
 dry_cleaning,126,39,39,0,39,31.0,True

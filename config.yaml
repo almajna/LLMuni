@@ -44,7 +44,9 @@ router:
 tasks:
   landmarks: data/landmarks.yaml
   n_per_tier: 100
-  pilot_size: 50
+  pilot_size: 15                      # 5 per tier, at least one infeasible task each
+  calibration_size: 5                 # taken from the pilot: measures real token use before the pilot
+  final_size: 150                     # 50 per tier for the final run, a superset of the pilot
   candidates_k: 6                     # stores listed per errand in open-book mode
   infeasible_share: 0.10
   matrix_window: ["07:00", "22:00"]   # grid departures precomputed per service day
@@ -92,12 +94,14 @@ tasks:
       min_rare: 2
 
 eval:
-  budget_usd: 25                 # hard cap for a run (pilot 25, full 150); BUDGET_USD in the environment overrides
+  budget_usd: 27                 # hard cap on TOTAL spend across all runs (ledger); BUDGET_USD overrides
   pilot_modes: [closed_book, open_book]
-  modes: [closed_book, open_book, tool_use]
+  modes: [closed_book, open_book]
+  tool_mode_models: 3            # tool_use runs for the top N models of the pilot (open book)
   max_tool_calls: 40             # per task in tool_use mode
-  max_output_tokens: 16000       # per call, reasoning included: bounds each call's worst-case cost
-  est_output_tokens: 6000        # expected per answer, for cost estimates (reasoning models)
+  reasoning_effort: medium       # sent to models that support OpenRouter's `reasoning` parameter
+  max_output_tokens: 8000        # per call, reasoning included: bounds each call's worst-case cost
+  est_output_tokens: 6000        # expected per answer before calibration, for cost estimates
   est_tool_turns: 12             # expected model turns per tool_use task, for cost estimates
   concurrency: 4
   request_timeout_s: 600
@@ -122,6 +126,7 @@ categories:
     hours_keys: ["opening_hours:pharmacy", opening_hours]  # prescription-counter hours win
   post_office:
     tags: {amenity: [post_office]}
+    require_any: [united states postal service, usps, post office, " station"]  # USPS only (Checkpoint 2)
   supermarket:
     tags: {shop: [supermarket]}
     brands:
@@ -134,6 +139,7 @@ categories:
     tags: {amenity: [bank, atm]}
   library:
     tags: {amenity: [library]}
+    require_any: [san francisco public library, branch library]  # SF Public Library branches only (Checkpoint 2)
   coffee:
     tags: {amenity: [cafe]}
   bakery:

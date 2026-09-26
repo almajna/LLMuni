@@ -22,12 +22,11 @@ def main(argv: list[str] | None = None) -> None:
     stages.add_parser("oracle", help="optimal plans for every task + brute-force and MILP cross-checks")
     stages.add_parser("examples", help="one worked example per tier with an itinerary map (R5)")
     stages.add_parser("grader-check", help="round-trip optimal plans through the grader (name + address only)")
-    ev = stages.add_parser("eval", help="baselines + model runs (cached, within BUDGET_USD) + grading")
-    ev.add_argument("--pilot", action="store_true", help="the pilot subset and pilot modes")
-    ev.add_argument("--dry-run", action="store_true", help="print the cost estimate; call no model")
+    ev = stages.add_parser("eval", help="baselines + model runs (cached, total spend capped at BUDGET_USD) + grading")
+    ev.add_argument("--subset", choices=["calibration", "pilot", "final"], default="pilot")
+    ev.add_argument("--dry-run", action="store_true", help="write the cost estimate; call no model")
     ev.add_argument("--baselines-only", action="store_true", help="grade the free baselines only")
     ev.add_argument("--models", nargs="*", help="override eval.models")
-    ev.add_argument("--modes", nargs="*", help="override the modes")
 
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", datefmt="%H:%M:%S")
@@ -65,5 +64,5 @@ def main(argv: list[str] | None = None) -> None:
     elif args.stage == "eval":
         from llmuni.eval.run import run_eval
 
-        run_eval(cfg, pilot=args.pilot, dry_run=args.dry_run, baselines_only=args.baselines_only,
-                 models=args.models, modes=args.modes)
+        run_eval(cfg, subset=args.subset, dry_run=args.dry_run, baselines_only=args.baselines_only,
+                 models=args.models)

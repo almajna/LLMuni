@@ -31,14 +31,16 @@ class BudgetExceeded(RuntimeError):
     pass
 
 
-def fetch_pricing(models: list[str]) -> dict[str, tuple[float, float]]:
-    """(USD per prompt token, USD per completion token) from OpenRouter's public model list (free)."""
+def fetch_models(models: list[str]) -> dict[str, dict]:
+    """Per model: USD per prompt/completion token and whether it accepts `reasoning`, from OpenRouter's
+    public model list (free)."""
     data = httpx.get(f"{API}/models", timeout=60).raise_for_status().json()["data"]
-    prices = {m["id"]: (float(m["pricing"]["prompt"]), float(m["pricing"]["completion"])) for m in data}
-    missing = [m for m in models if m not in prices]
+    info = {m["id"]: {"price_in": float(m["pricing"]["prompt"]), "price_out": float(m["pricing"]["completion"]),
+                      "reasoning": "reasoning" in (m.get("supported_parameters") or [])} for m in data}
+    missing = [m for m in models if m not in info]
     if missing:
         raise ValueError(f"not available on OpenRouter: {', '.join(missing)}")
-    return {m: prices[m] for m in models}
+    return {m: info[m] for m in models}
 
 
 def estimate_tokens(messages: list[dict], tools: list[dict] | None = None) -> int:
@@ -84,24 +86,27 @@ def _transient(exc: BaseException) -> bool:
 
 
 class OpenRouter:
-    def __init__(self, cfg: Config, ledger: Ledger, pricing: dict[str, tuple[float, float]]) -> None:
+    def __init__(self, cfg: Config, ledger: Ledger, models: dict[str, dict]) -> None:
         load_dotenv(cfg.root / ".env")
         key = os.environ.get("OPENROUTER_API_KEY")
         if not key:
             raise RuntimeError("OPENROUTER_API_KEY is not set (expected in .env)")
-        self.cfg, self.ledger, self.pricing = cfg, ledger, pricing
+        self.cfg, self.ledger, self.models = cfg, ledger, models
         self.http = httpx.Client(base_url=API, timeout=cfg.eval.request_timeout_s,
                                  headers={"Authorization": f"Bearer {key}", "X-Title": "LLMuni benchmark"})
 
     def worst_case(self, model: str, messages: list[dict], tools: list[dict] | None = None) -> float:
-        price_in, price_out = self.pricing[model]
-        return 1.25 * estimate_tokens(messages, tools) * price_in + self.cfg.eval.max_output_tokens * price_out
+        info = self.models[model]
+        return (1.25 * estimate_tokens(messages, tools) * info["price_in"]
+                + self.cfg.eval.max_output_tokens * info["price_out"])
 
     def chat(self, model: str, messages: list[dict], tools: list[dict] | None = None) -> dict:
         worst = self.worst_case(model, messages, tools)
         self.ledger.reserve(worst)
         body = {"model": model, "messages": messages, "max_tokens": self.cfg.eval.max_output_tokens,
                 "usage": {"include": True}}
+        if self.cfg.eval.reasoning_effort and self.models[model]["reasoning"]:
+            body["reasoning"] = {"effort": self.cfg.eval.reasoning_effort}
         if tools:
             body["tools"] = tools
         started = perf_counter()
@@ -114,8 +119,8 @@ class OpenRouter:
         usage = data.get("usage") or {}
         cost = usage.get("cost")
         if cost is None:  # fall back to list prices if the cost field is missing
-            price_in, price_out = self.pricing[model]
-            cost = usage.get("prompt_tokens", 0) * price_in + usage.get("completion_tokens", 0) * price_out
+            info = self.models[model]
+            cost = usage.get("prompt_tokens", 0) * info["price_in"] + usage.get("completion_tokens", 0) * info["price_out"]
         self.ledger.settle(worst, {"model": model, "cost_usd": cost, "prompt_tokens": usage.get("prompt_tokens"),
                                    "completion_tokens": usage.get("completion_tokens"), "latency_s": round(latency, 2)})
         choice = data["choices"][0]

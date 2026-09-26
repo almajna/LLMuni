@@ -34,6 +34,7 @@ class CategorySpec(BaseModel):
 
     tags: dict[str, list[str]]
     branded_tags: BrandedTags | None = None
+    require_any: list[str] = Field(default_factory=list)  # lowercase substrings, one must be in name/brand/operator
     hours_keys: list[str] = Field(default_factory=lambda: ["opening_hours"])
     brands: dict[str, list[str]] = Field(default_factory=dict)
 
@@ -82,6 +83,8 @@ class TasksConfig(BaseModel):
     landmarks: Path  # relative to the repo root
     n_per_tier: int
     pilot_size: int
+    calibration_size: int
+    final_size: int
     candidates_k: int
     infeasible_share: float
     matrix_window: tuple[str, str]
@@ -98,7 +101,9 @@ class EvalConfig(BaseModel):
     budget_usd: float
     pilot_modes: list[str]
     modes: list[str]
+    tool_mode_models: int
     max_tool_calls: int
+    reasoning_effort: str | None = None
     max_output_tokens: int
     est_output_tokens: int
     est_tool_turns: int

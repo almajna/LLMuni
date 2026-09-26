@@ -1,7 +1,7 @@
 # LLMuni pipeline. Stages are idempotent and cached; parameters live in config.yaml.
 LLMUNI ?= uv run python -m llmuni
 
-.PHONY: setup data router-check matrices tasks oracle examples estimate pilot eval test test-router
+.PHONY: setup data router-check matrices tasks oracle examples estimate calibrate pilot eval test test-router
 
 setup:  ## install the locked Python environment
 	uv sync
@@ -24,14 +24,19 @@ oracle:  ## optimal plans + brute-force and MILP cross-checks -> benchmark/<vers
 examples:  ## worked example per tier with itinerary maps -> reports/phase4/
 	$(LLMUNI) examples
 
-estimate:  ## pilot cost estimate only (no model calls)
-	$(LLMUNI) eval --pilot --dry-run
+estimate:  ## cost estimates for calibration, pilot and final runs (no model calls)
+	$(LLMUNI) eval --subset calibration --dry-run
+	$(LLMUNI) eval --subset pilot --dry-run
+	$(LLMUNI) eval --subset final --dry-run
 
-pilot:  ## pilot: 50 tasks x models x closed/open book, capped at BUDGET_USD (spends money)
-	$(LLMUNI) eval --pilot
+calibrate:  ## 5 pilot tasks x models, open book: measures real token use (spends money, capped)
+	$(LLMUNI) eval --subset calibration
 
-eval:   ## full run: all tasks x models x all modes, capped at BUDGET_USD (spends money)
-	$(LLMUNI) eval
+pilot:  ## 15 tasks x models x closed/open book (spends money; total spend capped at BUDGET_USD)
+	$(LLMUNI) eval --subset pilot
+
+eval:   ## final run: 150 tasks, all modes (spends money; total spend capped at BUDGET_USD)
+	$(LLMUNI) eval --subset final
 
 test:   ## fast unit tests
 	uv run pytest

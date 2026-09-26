@@ -36,12 +36,13 @@ def run_tasks_stage(cfg: Config) -> list[Task]:
     builder = InstanceBuilder(cfg, Matrices(cfg, routable_places(landmarks, pois)), pois)
     generator = Generator(cfg, landmarks, builder)
     tasks = [task for tier in cfg.tasks.tiers for task in generator.tier(tier)]
-    pilot = pick_pilot(cfg, tasks)
+    subsets = pick_subsets(cfg, tasks)
     out = cfg.root / "benchmark" / cfg.benchmark_version
     out.mkdir(parents=True, exist_ok=True)
     (out / "tasks.jsonl").write_text("".join(t.model_dump_json() + "\n" for t in tasks), encoding="utf-8")
-    (out / "pilot_ids.json").write_text(json.dumps(pilot, indent=2) + "\n", encoding="utf-8")
-    write_summary(cfg, tasks, pilot)
+    for name, ids in subsets.items():
+        (out / f"{name}_ids.json").write_text(json.dumps(ids, indent=2) + "\n", encoding="utf-8")
+    write_summary(cfg, tasks, subsets["pilot"])
     return tasks
 
 
@@ -274,20 +275,36 @@ class Generator:
         return task
 
 
-def pick_pilot(cfg: Config, tasks: list[Task]) -> list[str]:
-    """Stratified pilot subset: equal share per tier, infeasible tasks at the benchmark's rate."""
-    rng = random.Random(f"{cfg.seed}:{cfg.benchmark_version}:pilot")
-    tiers = list(cfg.tasks.tiers)
-    size, share = cfg.tasks.pilot_size, cfg.tasks.infeasible_share
-    pilot = []
-    for k, tier in enumerate(tiers):
-        quota = size // len(tiers) + (1 if k < size % len(tiers) else 0)
+def pick_subsets(cfg: Config, tasks: list[Task]) -> dict[str, list[str]]:
+    """Nested, stratified subsets: pilot (equal per tier, at least one infeasible task per tier) inside
+    final (same rule, larger); calibration is feasible pilot tasks taken round-robin across tiers.
+    Nesting means every answer bought for a smaller subset is reused by the larger one."""
+    rng = random.Random(f"{cfg.seed}:{cfg.benchmark_version}:subsets")
+    tiers, share = list(cfg.tasks.tiers), cfg.tasks.infeasible_share
+    order = {}
+    for tier in tiers:  # one fixed shuffled order per tier and kind; subsets take prefixes of it
         pool = [t for t in tasks if t.tier == tier]
-        infeasible = [t.task_id for t in pool if t.design.infeasible]
-        feasible = [t.task_id for t in pool if not t.design.infeasible]
-        n_infeasible = round(quota * share)
-        pilot += sorted(rng.sample(infeasible, n_infeasible) + rng.sample(feasible, quota - n_infeasible))
-    return pilot
+        order[tier] = ([t.task_id for t in rng.sample(pool, len(pool)) if not t.design.infeasible],
+                       [t.task_id for t in rng.sample(pool, len(pool)) if t.design.infeasible])
+
+    def take(size: int) -> dict[str, list[str]]:
+        picked = {}
+        for tier in tiers:
+            quota = size // len(tiers)
+            n_infeasible = max(1, round(quota * share))
+            feasible, infeasible = order[tier]
+            picked[tier] = feasible[: quota - n_infeasible] + infeasible[:n_infeasible]
+        return picked
+
+    pilot, final = take(cfg.tasks.pilot_size), take(cfg.tasks.final_size)
+    feasible_ids = {t.task_id for t in tasks if not t.design.infeasible}
+    feasible_pilot = [[tid for tid in pilot[tier] if tid in feasible_ids] for tier in tiers]
+    calibration = [tid for group in itertools.zip_longest(*feasible_pilot) for tid in group if tid]
+    return {
+        "calibration": sorted(calibration[: cfg.tasks.calibration_size]),
+        "pilot": sorted(tid for ids in pilot.values() for tid in ids),
+        "final": sorted(tid for ids in final.values() for tid in ids),
+    }
 
 
 def write_summary(cfg: Config, tasks: list[Task], pilot: list[str]) -> None:
