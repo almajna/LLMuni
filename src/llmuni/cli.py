@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 
 from llmuni.config import load_config
@@ -20,6 +21,7 @@ def main(argv: list[str] | None = None) -> None:
     stages.add_parser("tasks", help="generate the task set with oracle-verified (in)feasibility")
     stages.add_parser("oracle", help="optimal plans for every task + brute-force and MILP cross-checks")
     stages.add_parser("examples", help="one worked example per tier with an itinerary map (R5)")
+    stages.add_parser("grader-check", help="round-trip optimal plans through the grader (name + address only)")
     ev = stages.add_parser("eval", help="baselines + model runs (cached, within BUDGET_USD) + grading")
     ev.add_argument("--pilot", action="store_true", help="the pilot subset and pilot modes")
     ev.add_argument("--dry-run", action="store_true", help="print the cost estimate; call no model")
@@ -56,6 +58,10 @@ def main(argv: list[str] | None = None) -> None:
         from llmuni.oracle.examples import run_examples_stage
 
         run_examples_stage(cfg)
+    elif args.stage == "grader-check":
+        from llmuni.grader.check import run_grader_check
+
+        print(json.dumps(run_grader_check(cfg), indent=2))
     elif args.stage == "eval":
         from llmuni.eval.run import run_eval
 
