@@ -29,5 +29,5 @@ export function renderFailures(data: Bundle, mode: string, figure: HTMLElement, 
       <span class="fail-count">${parts[0].n}/${total}</span>
     </div>`).join("");
   const totals = KINDS.map((k) => ({ ...k, n: rows.reduce((a, r) => a + r.parts.find((p) => p.key === k.key)!.n, 0) }));
-  legend.innerHTML = totals.map((k) => `<li><span class="key seg-${k.key}"></span>${k.label}<b>${k.n}</b></li>`).join("");
+  legend.innerHTML = totals.map((k) => `<li class="${k.n ? "" : "is-zero"}"><span class="key seg-${k.key}"></span>${k.label}<b>${k.n}</b></li>`).join("");
 }

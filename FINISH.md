@@ -13,9 +13,10 @@ One command runs everything that remains for the final evaluation and publishes 
    with the travel-time tool (up to 40 calls per task).
 2. **Results** (`make results`): every cached answer is re-graded (no model calls) into `results/results.json`,
    `results/leaderboard.json`, `results/leaderboard.md` and `results/grades.jsonl`.
-3. **Site data** (`make site-data`): `site/public/data/*.json` and `video/src/data/hero.json`. Every hop the
-   replay draws is routed with R5 (Java 21, cached in `cache/site_routes.json`); without Java the hops are drawn
-   straight.
+3. **Site data** (`make site-data`): `site/public/data/*.json` and `video/src/data/hero.json`. The replay draws
+   each hop between stops as a timed arc (schematic, not the street path). `llmuni site-data --routes` swaps in
+   R5 itineraries (cached in `cache/site_routes.json`), but R5's itinerary search needs more than a 4 GB Java heap
+   on this network, so it is optional.
 4. **Site** (`make site`): `site/dist/`, a static build.
 5. **Video** (`make video`, `make gif`): `video/out/llmuni_16x9.mp4`, `video/out/llmuni_4x5.mp4` and the README
    GIF `docs/hero.gif`. The hero task is `site.hero_task` in `config.yaml`.

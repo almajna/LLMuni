@@ -4,7 +4,8 @@ Every hop the site draws (start -> stop -> ... -> end, for the optimal plans and
 the R5 itinerary for that origin, destination and departure minute, cached per hop in cache/site_routes.json.
 The itinerary is then stretched onto the plan's own replayed times (leave when the previous errand is done,
 arrive when the grader's replay arrives), so the map and the clocks never disagree. Without a cached itinerary
-a hop is drawn as a straight line on the same times.
+a hop is drawn as a shallow arc on the same times: schematic on purpose, so it is never mistaken for the street
+or line actually taken. (R5 itineraries need more than a 4 GB heap on this network; `--routes` is optional.)
 """
 
 from __future__ import annotations
@@ -60,10 +61,32 @@ def timed_path(hops: list[tuple], legs_by_hop: dict[str, list[dict]], day: str) 
     return points
 
 
+ARC_BEND = 0.14  # an un-routed hop is drawn as a shallow arc (clearly schematic, not a street path)
+ARC_POINTS = 16
+
+
+def _arc(a: XY, b: XY, leave: int, arrive: int) -> list[tuple[float, float, float]]:
+    """A quadratic arc from a to b bending to the right of travel, timed evenly along its length."""
+    kx = math.cos(math.radians((a[1] + b[1]) / 2))  # metres per degree of longitude shrink with latitude
+    dx, dy = (b[0] - a[0]) * kx, b[1] - a[1]
+    mid = ((a[0] + b[0]) / 2 + dy * ARC_BEND / kx, (a[1] + b[1]) / 2 - dx * ARC_BEND)
+    pts = []
+    for k in range(ARC_POINTS + 1):
+        u = k / ARC_POINTS
+        x = (1 - u) ** 2 * a[0] + 2 * (1 - u) * u * mid[0] + u ** 2 * b[0]
+        y = (1 - u) ** 2 * a[1] + 2 * (1 - u) * u * mid[1] + u ** 2 * b[1]
+        pts.append((x, y))
+    lengths = [0.0]
+    for p, q in zip(pts, pts[1:]):
+        lengths.append(lengths[-1] + _meters(p, q))
+    total = lengths[-1] or 1.0
+    return [(x, y, round(leave + (arrive - leave) * d / total, 3)) for (x, y), d in zip(pts, lengths)]
+
+
 def _hop_points(a: XY, b: XY, leave: int, arrive: int, legs: list[dict]) -> list[tuple[float, float, float]]:
     coords = [(leg["coords"], leg["t0"], leg["t1"]) for leg in legs if leg["coords"]]
     if not coords:
-        return [(a[0], a[1], float(leave)), (b[0], b[1], float(arrive))]
+        return _arc(a, b, leave, arrive) if a != b else [(a[0], a[1], float(leave)), (b[0], b[1], float(arrive))]
     t_first, t_last = coords[0][1], coords[-1][2]
     scale = (arrive - leave) / (t_last - t_first) if t_last > t_first else 0.0
     out = [(a[0], a[1], float(leave))]

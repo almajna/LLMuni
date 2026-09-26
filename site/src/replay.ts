@@ -66,6 +66,12 @@ export class Replay {
     this.map.addControl(this.overlay as unknown as maplibregl.IControl);
     this.map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "bottom-right");
     root.querySelector(".clock-flaps")!.append(this.clockFlaps.el);
+    this.map.once("load", () => this.task && this.frame());
+    let pending = 0;
+    addEventListener("resize", () => {
+      clearTimeout(pending);
+      pending = window.setTimeout(() => this.task && this.frame(), 150);
+    });
     this.wire();
   }
 
@@ -136,12 +142,13 @@ export class Replay {
   }
 
   private frame() {
+    this.map.resize(); // the container may have been laid out after the map was created
     const pts: XY[] = [this.task.start.at, ...(this.task.end ? [this.task.end.at] : []),
       ...this.units.flatMap((u) => u.path.map((p) => [p[0], p[1]] as XY))];
     const lons = pts.map((p) => p[0]), lats = pts.map((p) => p[1]);
     const bounds: [XY, XY] = [[Math.min(...lons), Math.min(...lats)], [Math.max(...lons), Math.max(...lats)]];
     const wide = innerWidth >= 1000;
-    const padding = wide ? { top: 150, bottom: 90, left: 480, right: 130 } : { top: 70, bottom: 40, left: 40, right: 50 };
+    const padding = wide ? { top: 150, bottom: 90, left: 480, right: 130 } : { top: 110, bottom: 36, left: 36, right: 44 };
     const camera = this.map.cameraForBounds(bounds, { padding, maxZoom: 15 });
     if (camera) this.map.jumpTo({ ...camera, pitch: 48, bearing: -16 });
   }
@@ -378,6 +385,10 @@ function stateOf(u: Unit, t: number, task: TaskInfo): string {
   }
   const end = u.path[u.path.length - 1][2];
   if (t < end) return task.end ? `en route to ${task.end.label}` : "en route";
+  if (u.plan && u.plan.kind === "late" && task.end) {
+    const late = task.end.arrive_by != null ? Math.round(end - task.end.arrive_by) : null;
+    return `arrived ${clock(end)}${late ? `, ${late} min late` : ""}`;
+  }
   if (u.plan && u.plan.kind !== "feasible") {
     const blocked = u.plan.stops.find((s) => s.match && s.match !== "matched");
     if (blocked) return `${KIND_TEXT[u.plan.kind].toLowerCase()}: ${blocked.name}`;

@@ -2,7 +2,7 @@ import React from "react";
 import { AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import hero from "../data/hero.json";
 import { Flap } from "../lib/Flap";
-import { type Camera, type TimedPoint, PLATE, fit, mixCamera, project, toPlate, travelled } from "../lib/geo";
+import { type Camera, type TimedPoint, PLATE, fit, fitTilted, mixCamera, project, toPlate, travelled } from "../lib/geo";
 import { C, SIGNAGE, UI, clock, modelColor, modelName } from "../lib/theme";
 
 // Shots 2-4 on one continuous map: fly in over the city while the request appears as a checklist, race the
@@ -57,10 +57,11 @@ const ALERTS: Alert[] = UNITS.flatMap((u) => {
   return [];
 }).sort((a, b) => a.time - b.time);
 
+const POINTS: [number, number][] = [toPlate(task.start.at[0], task.start.at[1]), ...(task.end ? [toPlate(task.end.at[0], task.end.at[1])] : []),
+  ...UNITS.flatMap((u) => u.path.map((p) => toPlate(p[0], p[1])))];
+
 function bbox(): [number, number, number, number] {
-  const pts = [toPlate(task.start.at[0], task.start.at[1]), ...(task.end ? [toPlate(task.end.at[0], task.end.at[1])] : []),
-    ...UNITS.flatMap((u) => u.path.map((p) => toPlate(p[0], p[1])))];
-  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  const xs = POINTS.map((p) => p[0]), ys = POINTS.map((p) => p[1]);
   return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
 }
 
@@ -97,9 +98,9 @@ export const MapStory: React.FC = () => {
   const { width, height } = useVideoConfig();
   const L = layout(width, height);
   const overview = fit([0, 0, PLATE.w, PLATE.h], L.map.w, L.map.h, 0.02);
-  const framed = fit(bbox(), L.map.w, L.map.h, L.wide ? 0.08 : 0.06);
-  const target: Camera = { ...framed, zoom: framed.zoom * 1.12, tilt: 46, bearing: -14 };
-  const drift: Camera = { ...target, zoom: target.zoom * 1.05, bearing: -9 };
+  const framed = fit(bbox(), L.map.w, L.map.h, 0.08);
+  const target = fitTilted({ ...framed, tilt: 46, bearing: -14 }, POINTS, L.cx, L.cy, L.map.w, L.map.h, PERSPECTIVE, L.wide ? 0.12 : 0.1);
+  const drift = fitTilted({ ...target, bearing: -9 }, POINTS, L.cx, L.cy, L.map.w, L.map.h, PERSPECTIVE, L.wide ? 0.11 : 0.09);
   const fly = interpolate(frame, [0, FLY], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.bezier(0.65, 0, 0.35, 1) });
   const drifting = interpolate(frame, [FLY, FLY + RACE + HOLD], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const cam = frame < FLY ? mixCamera(overview, target, fly) : mixCamera(target, drift, drifting);
@@ -146,14 +147,16 @@ export const MapStory: React.FC = () => {
             }) : null}
           </svg>
         </div>
-        <Marker at={at(task.start.at[0], task.start.at[1])} label={`START · ${clock(task.start.depart)}`} show={fly > 0.7} />
-        {task.end ? <Marker at={at(task.end.at[0], task.end.at[1])} label={task.end.arrive_by != null ? `MEET BY ${clock(task.end.arrive_by)}` : "END"} show={fly > 0.7} /> : null}
+        <Marker at={at(task.start.at[0], task.start.at[1])} label={`START · ${clock(task.start.depart)}`} show={fly > 0.7} mapW={L.map.w} />
+        {task.end ? <Marker at={at(task.end.at[0], task.end.at[1])} label={task.end.arrive_by != null ? `MEET BY ${clock(task.end.arrive_by)}` : "END"} show={fly > 0.7} mapW={L.map.w} /> : null}
         {liveAlerts.map((a, i) => {
           const [x, y] = project(cam, L.cx, L.cy, PERSPECTIVE, a.at[0], a.at[1]);
-          const stack = liveAlerts.slice(0, i).filter((b) => Math.hypot(b.at[0] - a.at[0], b.at[1] - a.at[1]) < 80).length + (task.end && Math.hypot(toPlate(task.end.at[0], task.end.at[1])[0] - a.at[0], toPlate(task.end.at[0], task.end.at[1])[1] - a.at[1]) < 80 ? 1 : 0);
+          const atEnd = !!task.end && Math.hypot(toPlate(task.end.at[0], task.end.at[1])[0] - a.at[0], toPlate(task.end.at[0], task.end.at[1])[1] - a.at[1]) < 60;
+          const stack = liveAlerts.slice(0, i).filter((b) => Math.hypot(b.at[0] - a.at[0], b.at[1] - a.at[1]) < 80).length;
           const born = interpolate(t - a.time, [0, 3], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+          const top = atEnd ? y - 64 - stack * 40 : y + 46 + stack * 40; // meet-up alerts stack above, store alerts below
           return (
-            <div key={i} style={{ position: "absolute", left: x, top: y - 34 - stack * 40, translate: "-50% -100%", opacity: born,
+            <div key={i} style={{ position: "absolute", left: Math.max(220, Math.min(L.map.w - 220, x)), top, translate: atEnd ? "-50% -100%" : "-50% 0%", opacity: born,
               scale: interpolate(born, [0, 1], [0.92, 1]), background: a.hero ? C.alert : "#961f24", color: "#fff5f4", padding: "5px 11px",
               fontFamily: SIGNAGE, fontWeight: 700, fontSize: L.wide ? 26 : 24, letterSpacing: "0.04em", whiteSpace: "nowrap", borderRadius: 3,
               boxShadow: "0 6px 16px rgba(0,0,0,0.5)", textTransform: "uppercase" }}>
@@ -168,13 +171,16 @@ export const MapStory: React.FC = () => {
   );
 };
 
-const Marker: React.FC<{ at: [number, number]; label: string; show: boolean }> = ({ at, label, show }) => (
-  <div style={{ position: "absolute", left: at[0], top: at[1], opacity: show ? 1 : 0 }}>
-    <div style={{ position: "absolute", left: -8, top: -8, width: 16, height: 16, borderRadius: "50%", background: C.ground, border: `3px solid ${C.ink}` }} />
-    <div style={{ position: "absolute", left: 16, top: -14, whiteSpace: "nowrap", fontFamily: SIGNAGE, fontWeight: 600, fontSize: 22,
-      letterSpacing: "0.08em", color: C.ink, textShadow: `0 0 6px ${C.ground}, 0 0 3px ${C.ground}` }}>{label}</div>
-  </div>
-);
+const Marker: React.FC<{ at: [number, number]; label: string; show: boolean; mapW: number }> = ({ at, label, show, mapW }) => {
+  const left = at[0] > mapW * 0.72; // near the right edge the label reads leftwards
+  return (
+    <div style={{ position: "absolute", left: at[0], top: at[1], opacity: show ? 1 : 0 }}>
+      <div style={{ position: "absolute", left: -8, top: -8, width: 16, height: 16, borderRadius: "50%", background: C.ground, border: `3px solid ${C.ink}` }} />
+      <div style={{ position: "absolute", left: left ? undefined : 16, right: left ? 16 : undefined, top: -14, whiteSpace: "nowrap", fontFamily: SIGNAGE,
+        fontWeight: 600, fontSize: 22, letterSpacing: "0.08em", color: C.ink, textShadow: `0 0 6px ${C.ground}, 0 0 3px ${C.ground}` }}>{label}</div>
+    </div>
+  );
+};
 
 const Panel: React.FC<{ frame: number; t: number; L: ReturnType<typeof layout> }> = ({ frame, t, L }) => {
   const pad = L.wide ? 44 : 40;
@@ -226,7 +232,7 @@ const Units: React.FC<{ t: number; wide: boolean }> = ({ t, wide }) => (
       <div style={{ fontFamily: SIGNAGE, fontWeight: 600, fontSize: 22, letterSpacing: "0.14em", color: C.label }}>OPEN BOOK · SAME TIMETABLE</div>
       <div style={{ fontFamily: SIGNAGE, fontWeight: 600, fontSize: wide ? 56 : 48, color: C.flapInk, letterSpacing: "0.02em" }}>{clock(t)}</div>
     </div>
-    <div style={{ display: "grid", gap: wide ? 12 : 8 }}>
+    <div style={{ display: "grid", gap: wide ? 12 : 10, gridTemplateColumns: wide ? "1fr" : "1fr 1fr", columnGap: 28 }}>
       {UNITS.map((u) => {
         const s = status(u, t);
         return (
@@ -248,12 +254,12 @@ const Arrivals: React.FC<{ frame: number; wide: boolean }> = ({ frame, wide }) =
     const end = u.path.length > 1 ? u.path[u.path.length - 1][2] : null;
     const kind = u.optimal ? "optimal" : u.plan?.kind ?? "missing";
     const late = kind === "late" && task.end?.arrive_by != null && end != null ? Math.round(end - task.end.arrive_by) : null;
-    const note = kind === "optimal" ? "OPTIMAL" : kind === "feasible" ? `+${Math.round((u.plan!.gap ?? 0) * 1000) / 10}%`
-      : kind === "late" ? `LATE+${late}` : kind === "deadline" ? "MISSED" : kind === "invalid_json" ? "NO ANSWER" : (KIND[kind] ?? kind).toUpperCase();
+    const note = kind === "optimal" ? "BEST" : kind === "feasible" ? `+${(Math.round((u.plan!.gap ?? 0) * 1000) / 10).toFixed(1)}%`
+      : kind === "late" ? `LATE ${late}` : kind === "deadline" ? "MISSED" : kind === "invalid_json" ? "NO PLAN" : (KIND[kind] ?? kind).toUpperCase().slice(0, 7);
     const time = kind === "optimal" || kind === "feasible" || kind === "late" ? clock(end) : "—";
     return { u, time, note, bad: !["optimal", "feasible"].includes(kind), order: kind === "optimal" ? -1 : end ?? 9999 };
   }).sort((a, b) => (a.bad === b.bad ? a.order - b.order : a.bad ? 1 : -1));
-  const cell = wide ? { w: 17, h: 30, fs: 23 } : { w: 22, h: 34, fs: 26 };
+  const cell = wide ? { w: 15, h: 27, fs: 20 } : { w: 21, h: 34, fs: 26 };
   return (
     <>
       <div style={{ fontFamily: SIGNAGE, fontWeight: 600, fontSize: 22, letterSpacing: "0.14em", color: C.label }}>
@@ -263,10 +269,10 @@ const Arrivals: React.FC<{ frame: number; wide: boolean }> = ({ frame, wide }) =
         {rows.map((r, i) => (
           <div key={r.u.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: r.u.color, flex: "none" }} />
-            <Flap text={r.u.name} width={wide ? 12 : 14} start={i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={3} />
-            <Flap text={r.time} width={8} align="right" start={8 + i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={3}
+            <Flap text={r.u.name} width={wide ? 11 : 16} start={i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={2} />
+            <Flap text={r.time} width={8} align="right" start={8 + i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={2}
               color={r.u.optimal ? C.gold : undefined} />
-            <Flap text={r.note} width={wide ? 7 : 9} align="right" start={14 + i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={3}
+            <Flap text={r.note} width={7} align="right" start={14 + i * 4} cell={cell} stagger={1} steps={4} stepFrames={2} gap={2}
               color={r.bad ? C.alertInk : r.u.optimal ? C.gold : C.ok} />
           </div>
         ))}

@@ -73,3 +73,21 @@ export function travelled(path: TimedPoint[], t: number): [number, number][] {
   }
   return out;
 }
+
+/** Adjust a tilted, turned camera so the given plate points fill a w x h area (centre cx, cy) with a margin. */
+export function fitTilted(cam: Camera, points: [number, number][], cx: number, cy: number, w: number, h: number,
+                          d: number, margin = 0.08): Camera {
+  let c = { ...cam };
+  for (let i = 0; i < 6; i++) {
+    const proj = points.map(([x, y]) => project(c, cx, cy, d, x, y));
+    const xs = proj.map((p) => p[0]), ys = proj.map((p) => p[1]);
+    const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+    const scale = Math.min((w * (1 - 2 * margin)) / Math.max(1, x1 - x0), (h * (1 - 2 * margin)) / Math.max(1, y1 - y0));
+    const dx = (x0 + x1) / 2 - cx, dy = (y0 + y1) / 2 - cy; // screen offset of the points' centre
+    const b = (-c.bearing * Math.PI) / 180, t = (c.tilt * Math.PI) / 180;
+    const ux = dx / c.zoom, uy = dy / (c.zoom * Math.cos(t));
+    c = { ...c, fx: c.fx + ux * Math.cos(b) - uy * Math.sin(b), fy: c.fy + ux * Math.sin(b) + uy * Math.cos(b),
+          zoom: c.zoom * Math.pow(scale, 0.8) };
+  }
+  return c;
+}

@@ -1,0 +1,9 @@
+{
+ "lon0": -122.517,
+ "lat0": 37.704,
+ "lon1": -122.354,
+ "lat1": 37.812,
+ "width": 4000,
+ "height": 3352,
+ "source": "OpenStreetMap streets and Muni/BART GTFS shapes from data/MANIFEST.json"
+}

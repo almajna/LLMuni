@@ -58,8 +58,8 @@ publish: results site-data site video gif readme test commit  ## no spend: rebui
 results:  ## re-grade every cached answer (no model calls) -> results/
 	$(LLMUNI) eval --subset final --grade-only --tool-models $(TOOL_MODE)
 
-site-data:  ## site + video JSON, routing each replayed hop with R5 (cached; needs Java)
-	$(LLMUNI) site-data --routes
+site-data:  ## site + video JSON (replay hops drawn as timed arcs; `llmuni site-data --routes` adds R5 paths, ~8 GB heap)
+	$(LLMUNI) site-data
 
 video/public/basemap.png: data/MANIFEST.json
 	$(LLMUNI) video-basemap
@@ -68,10 +68,10 @@ site:  ## static site -> site/dist (deploy that folder; see FINISH.md)
 	cd site && npm ci --no-audit --no-fund && npx vite build
 
 video: video/public/basemap.png  ## Remotion renders -> video/out/llmuni_16x9.mp4 and llmuni_4x5.mp4
-	cd video && npm ci --no-audit --no-fund && npx remotion render src/index.ts LLMuni-16x9 out/llmuni_16x9.mp4 --concurrency=4 		&& npx remotion render src/index.ts LLMuni-4x5 out/llmuni_4x5.mp4 --concurrency=4
+	cd video && npm ci --no-audit --no-fund && npx remotion render src/index.ts LLMuni-16x9 out/llmuni_16x9.mp4 --concurrency=2 --crf=23 		&& npx remotion render src/index.ts LLMuni-4x5 out/llmuni_4x5.mp4 --concurrency=2 --crf=23
 
-gif:  ## README hero GIF from the 16:9 render (the race)
-	ffmpeg -y -loglevel error -ss 6.5 -t 14 -i video/out/llmuni_16x9.mp4 -vf "fps=12,scale=800:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer:bayer_scale=4" docs/hero.gif
+gif:  ## README hero GIF from the 16:9 render (the race), with Remotion's bundled ffmpeg
+	cd video && npx remotion ffmpeg -hide_banner -loglevel error -y -ss 9 -t 15 -i out/llmuni_16x9.mp4 		-vf "scale=640:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=64:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" 		-r 8 ../docs/hero.gif
 
 readme:  ## rewrite the README's headline and leaderboard blocks
 	$(LLMUNI) readme

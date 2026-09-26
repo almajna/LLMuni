@@ -57,7 +57,7 @@ const Half: React.FC<{ ch: string; top: boolean; size: CellSize; rotate?: number
         left: 0,
         right: 0,
         height: size.h,
-        top: top ? 0 : -size.h / 2,
+        top: (top ? 0 : -size.h / 2) - Math.round(size.h * 0.06), // lift glyphs so the split never erases a "+" bar
         lineHeight: `${size.h}px`,
         fontSize: size.fs,
         textAlign: "center",
