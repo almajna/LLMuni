@@ -22,13 +22,17 @@ REFERENCE = {"closed_book": "global_optimum", "open_book": "optimum", "tool_use"
 
 @dataclass
 class Grade:
-    status: str  # feasible | infeasible | hallucinated | unverifiable | invalid_plan | invalid_json | declined
+    # feasible | infeasible | hallucinated (a store that does not exist) | wrong_address (a real store, not
+    # where the plan goes) | unverifiable | invalid_plan | invalid_json | declined
+    status: str
     valid_json: bool
     claimed_feasible: bool | None = None
     failure: str | None = None
     finish: str | None = None
     optimality_gap: float | None = None
-    hallucinated_store: bool = False
+    hallucinated_store: bool = False  # names a store found in neither OSM nor the city's business registry
+    wrong_address: bool = False  # names a real store at an address where it is not
+    not_in_osm_stops: int = 0  # real stores (registered at that address) that OSM lacks; also unverifiable
     unverifiable_stops: int = 0
     correct_infeasible_call: bool | None = None  # infeasible tasks only: did the model say so?
     false_infeasible_call: bool = False  # feasible task declined as impossible
@@ -69,8 +73,10 @@ class Grader:
         chosen, sequence, blocked = {}, [], None
         for stop, match in zip(answer.stops, matches):
             e = errand_of[stop.category]
-            if match.status == "hallucinated":
-                blocked = ("hallucinated", f"no {stop.category} called {stop.store_name!r} at that address")
+            if match.status == "hallucinated" and match.reason == "wrong_address":
+                blocked = ("wrong_address", f"no {stop.category} called {stop.store_name!r} at that address")
+            elif match.status == "hallucinated":
+                blocked = ("hallucinated", f"no {stop.category} called {stop.store_name!r} in San Francisco")
             elif match.status == "unverifiable":
                 blocked = ("unverifiable", f"{stop.store_name}: {match.reason}")
             elif match.hours_status == CLOSED_ALL_WEEK:
@@ -85,7 +91,9 @@ class Grader:
         inst = self.builder.plan_instance(task, chosen)
         outcome = simulate(inst, [(e, int(inst.options[e][0])) for e in sequence])
         grade = Grade("feasible", True, True,
-                      hallucinated_store=any(m.status == "hallucinated" for m in matches),
+                      hallucinated_store=any(m.status == "hallucinated" and m.reason != "wrong_address" for m in matches),
+                      wrong_address=any(m.reason == "wrong_address" for m in matches),
+                      not_in_osm_stops=sum(m.reason == "not_in_osm" for m in matches),
                       unverifiable_stops=sum(m.status == "unverifiable" for m in matches),
                       correct_infeasible_call=False if impossible else None)
         grade.stops = self._stop_log(answer, matches, outcome)

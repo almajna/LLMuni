@@ -16,6 +16,7 @@ from llmuni import hours
 from llmuni.config import Config
 from llmuni.data import boundary, gtfs, osm, report
 from llmuni.data.download import fetch, sha256_file
+from llmuni.grader.registry import registry_source
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ def run_data_stage(cfg: Config, refresh: bool = False) -> dict:
     entry = fetch(cfg.data.osm.url, pbf, previous.get("osm"), refresh)
     entry.update(file=cfg.rel(pbf), snapshot_timestamp=osm.snapshot_timestamp(pbf) or entry["http_last_modified"])
     sources["osm"] = entry
+    sources["registry"] = registry_source(cfg, previous.get("registry"), refresh)
 
     boundary_file = paths.processed / "sf_boundary.geojson"
     sf, meta = boundary.load_boundary(cfg.data.boundary_query, boundary_file)

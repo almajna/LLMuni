@@ -126,6 +126,16 @@
       "osm": "relation/111968",
       "display_name": "San Francisco, California, United States",
       "file": "data/processed/sf_boundary.geojson"
+    },
+    "registry": {
+      "url": "https://data.sf.gov/resource/g8m3-pdis.csv?$select=uniqueid,dba_name,ownership_name,full_business_address,business_zip,location,location_start_date&$where=location_end_date%20IS%20NULL%20AND%20upper(city)%3D%27SAN%20FRANCISCO%27&$order=uniqueid&$limit=500000",
+      "sha256": "d722439a9118b2d1ba38c77fcf66276382cd82d00966bc0ef74ffa15e9b4bf7a",
+      "bytes": 15805267,
+      "downloaded_at": "2026-09-26T09:51:11+00:00",
+      "http_last_modified": "Fri, 25 Sep 2026 11:29:30 GMT",
+      "label": "SF Registered Business Locations",
+      "file": "data/raw/sf_businesses.csv",
+      "rows": 101976
     }
   },
   "pois": {

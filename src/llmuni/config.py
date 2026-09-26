@@ -45,6 +45,7 @@ class DataConfig(BaseModel):
     dedup_radius_m: float
     gtfs: dict[str, Source]
     osm: Source
+    registry: Source  # SF business registry: the grader's second source for stores OSM lacks
     boundary_query: str
 
     @field_validator("reference_week_start")

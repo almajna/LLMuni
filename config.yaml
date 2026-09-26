@@ -29,6 +29,11 @@ data:
   osm:
     # BBBike's weekly San Francisco cut of the OSM planet (bbox -122.54,37.54 .. -122.32,37.93).
     url: https://download.bbbike.org/osm/bbbike/SanFrancisco/SanFrancisco.osm.pbf
+  registry:
+    # San Francisco's Registered Business Locations (DataSF g8m3-pdis), active locations only. The grader
+    # consults it only for stores missing from OSM: real store OSM lacks vs wrong address vs no such store.
+    label: SF Registered Business Locations
+    url: "https://data.sf.gov/resource/g8m3-pdis.csv?$select=uniqueid,dba_name,ownership_name,full_business_address,business_zip,location,location_start_date&$where=location_end_date%20IS%20NULL%20AND%20upper(city)%3D%27SAN%20FRANCISCO%27&$order=uniqueid&$limit=500000"
   boundary_query: San Francisco, California, USA
 
 router:

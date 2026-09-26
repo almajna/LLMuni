@@ -8,6 +8,7 @@ from llmuni.config import load_config
 from llmuni.grader.answer import Answer, parse_answer
 from llmuni.grader.geocode import Geocoder, parse_address
 from llmuni.grader.match import StoreMatcher
+from llmuni.grader.registry import build_registry, core_name, distinctive
 from llmuni.grader.replay import Grader
 from llmuni.oracle.build import InstanceBuilder
 from llmuni.router import TravelMatrix, fifo_arrivals
@@ -50,9 +51,16 @@ def make_task(infeasible: bool = False) -> Task:
     )
 
 
-@pytest.fixture(scope="module")
-def grader() -> Grader:
-    geocoder = Geocoder(
+REGISTRY = build_registry(pd.DataFrame([
+    # dba_name, ownership_name, full_business_address, location
+    ("Golden Gate Apothecary", "Golden Gate Apothecary Inc", "100 Market St", "POINT (-122.4001 37.7901)"),
+    ("Sightglass Coffee #002", "Sightglass Coffee Roasters Llc", "270 7th St", "POINT (-122.4086 37.7766)"),
+    ("Cafe", "Jane Doe", "1030 Valencia St", "POINT (-122.4211 37.7561)"),
+], columns=["dba_name", "ownership_name", "full_business_address", "location"]))
+
+
+def _geocoder() -> Geocoder:
+    return Geocoder(
         {
             "market street": (np.array([100, 2020]), np.array([[37.7900, -122.4000], [37.7690, -122.4280]])),
             "mint street": (np.array([66]), np.array([[37.7820, -122.4050]])),
@@ -61,9 +69,22 @@ def grader() -> Grader:
         },
         {}, {},
     )
+
+
+def _grader(registry=None) -> Grader:
     builder = InstanceBuilder(load_config(), OneDayMatrices(), POIS)
     oracle = {"t1": {"optimum": {"finish": "09:50"}, "global_optimum": {"finish": "09:50"}}}
-    return Grader(builder, StoreMatcher(POIS, geocoder), oracle)
+    return Grader(builder, StoreMatcher(POIS, _geocoder(), registry=registry), oracle)
+
+
+@pytest.fixture(scope="module")
+def grader() -> Grader:
+    return _grader()
+
+
+@pytest.fixture(scope="module")
+def registered() -> Grader:
+    return _grader(REGISTRY)
 
 
 def answer(*stops, feasible=True) -> Answer:
@@ -140,3 +161,40 @@ def test_address_parsing():
     assert parse_address("2690 Mission St, San Francisco, CA 94110") == (2690, "mission street", None)
     assert parse_address("Haight & Ashbury") == (None, "haight", "ashbury")
     assert parse_address("2020 Market Street #100")[:2] == (2020, "market street")
+
+
+RITUAL = ("coffee", "Ritual Coffee", "1026 Valencia St")
+
+
+def test_real_store_missing_from_osm_is_unverifiable_not_hallucinated(registered):
+    g = registered.grade(make_task(), answer(("pharmacy", "Golden Gate Apothecary", "100 Market St"), RITUAL), "closed_book")
+    assert g.status == "unverifiable" and g.not_in_osm_stops == 1 and not g.hallucinated_store
+    assert g.stops[0]["reason"] == "not_in_osm" and g.stops[0]["method"] == "registry"
+
+
+def test_registered_store_named_without_an_address_is_not_in_osm(registered):
+    g = registered.grade(make_task(), answer(("pharmacy", "Golden Gate Apothecary", None), RITUAL), "closed_book")
+    assert g.status == "unverifiable" and g.stops[0]["reason"] == "not_in_osm"
+
+
+def test_chain_mapped_elsewhere_is_a_wrong_address(registered):
+    g = registered.grade(make_task(), answer(("pharmacy", "Walgreens", "66 Mint St"), RITUAL), "closed_book")
+    assert g.status == "wrong_address" and g.wrong_address and not g.hallucinated_store
+
+
+def test_store_registered_only_elsewhere_is_a_wrong_address(registered):
+    g = registered.grade(make_task(), answer(("pharmacy", "Walgreens", "100 Market St"),
+                                             ("coffee", "Sightglass Coffee", "2020 Market St")), "closed_book")
+    assert g.status == "wrong_address" and g.stops[1]["reason"] == "wrong_address"
+
+
+def test_store_in_neither_source_does_not_exist(registered):
+    g = registered.grade(make_task(), answer(("pharmacy", "Imaginary Drugs", "100 Market St"), RITUAL), "closed_book")
+    assert g.status == "hallucinated" and g.hallucinated_store and g.stops[0]["reason"] == "no_such_store"
+
+
+def test_generic_names_never_match_the_registry():
+    assert core_name("Walgreens #04529") == "walgreens" and core_name("Bank Of America, N.A.") == "bank of america"
+    assert not distinctive(core_name("The Coffee Shop")) and distinctive(core_name("Ritual Coffee"))
+    assert not REGISTRY.near("Coffee", (37.7561, -122.4211), None, None, 150)  # "Cafe" is too generic to be a name
+    assert not REGISTRY.anywhere("Blue Cafe")

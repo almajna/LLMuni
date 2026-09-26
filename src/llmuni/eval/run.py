@@ -26,6 +26,7 @@ from llmuni.eval.tools import TravelTool
 from llmuni.grader.answer import parse_answer
 from llmuni.grader.geocode import build_geocoder
 from llmuni.grader.match import StoreMatcher
+from llmuni.grader.registry import load_registry
 from llmuni.grader.replay import Grader
 from llmuni.oracle.run import load_tasks, oracle_context
 from llmuni.tasks.generate import final_rounds
@@ -229,7 +230,7 @@ def grade_subset(cfg: Config, subset: str, tasks: list[Task], plan: dict[str, li
     builder, pois = oracle_context(cfg)
     geocoder = build_geocoder(cfg.paths.raw / "sf.osm.pbf", cfg.paths.cache / f"geocoder_{osm_sha(cfg)[:16]}.pkl")
     oracle = {r["task_id"]: r for r in map(json.loads, (benchmark_dir(cfg) / "oracle.jsonl").read_text().splitlines())}
-    grader = Grader(builder, StoreMatcher(pois, geocoder), oracle)
+    grader = Grader(builder, StoreMatcher(pois, geocoder, registry=load_registry(cfg)), oracle)
     rows = []
     for task in tasks:
         inst = builder.instance(task, "candidates")
