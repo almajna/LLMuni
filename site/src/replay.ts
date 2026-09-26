@@ -67,6 +67,7 @@ export class Replay {
     this.map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "bottom-right");
     root.querySelector(".clock-flaps")!.append(this.clockFlaps.el);
     this.map.once("load", () => this.task && this.frame());
+    this.map.on("idle", () => (document.documentElement.dataset.mapIdle = "1")); // tiles drawn: screenshots wait on it
     let pending = 0;
     addEventListener("resize", () => {
       clearTimeout(pending);
@@ -95,6 +96,11 @@ export class Replay {
       b.addEventListener("click", () => this.onChange(this.task.id, b.dataset.mode!)));
     (this.$(".task-select") as HTMLSelectElement).addEventListener("change", (e) =>
       this.onChange((e.target as HTMLSelectElement).value, this.mode));
+    this.$(".request-more").addEventListener("click", () => {
+      const open = this.$(".ticket-request").classList.toggle("is-open");
+      this.$(".request-more").textContent = open ? "Less" : "Full request";
+      this.$(".request-more").setAttribute("aria-expanded", String(open));
+    });
     addEventListener("keydown", (e) => {
       if (e.key === " " && document.activeElement === document.body && this.inView()) {
         e.preventDefault();
@@ -148,9 +154,23 @@ export class Replay {
     const lons = pts.map((p) => p[0]), lats = pts.map((p) => p[1]);
     const bounds: [XY, XY] = [[Math.min(...lons), Math.min(...lats)], [Math.max(...lons), Math.max(...lats)]];
     const wide = innerWidth >= 1000;
-    const padding = wide ? { top: 150, bottom: 90, left: 480, right: 130 } : { top: 110, bottom: 36, left: 36, right: 44 };
-    const camera = this.map.cameraForBounds(bounds, { padding, maxZoom: 15 });
-    if (camera) this.map.jumpTo({ ...camera, pitch: 48, bearing: -16 });
+    // Room for the rail (desktop), the headline plate and the alert labels that stack above the meet-up.
+    const pad = wide ? { top: 170, bottom: 80, left: 480, right: 120 } : { top: 200, bottom: 34, left: 34, right: 40 };
+    const camera = this.map.cameraForBounds(bounds, { padding: pad, maxZoom: 15, bearing: -16 });
+    if (!camera) return;
+    this.map.jumpTo({ ...camera, pitch: 48, bearing: -16 });
+    // Pitch shrinks the far side and grows the near side, so settle the fit on the projected points themselves.
+    const canvas = this.map.getCanvas().getBoundingClientRect();
+    const boxW = canvas.width - pad.left - pad.right, boxH = canvas.height - pad.top - pad.bottom;
+    for (let i = 0; i < 8 && boxW > 40 && boxH > 40; i++) {
+      const q = pts.map((p) => this.map.project(p));
+      const x0 = Math.min(...q.map((v) => v.x)), x1 = Math.max(...q.map((v) => v.x));
+      const y0 = Math.min(...q.map((v) => v.y)), y1 = Math.max(...q.map((v) => v.y));
+      this.map.panBy([(x0 + x1) / 2 - (pad.left + boxW / 2), (y0 + y1) / 2 - (pad.top + boxH / 2)], { animate: false });
+      const scale = Math.min(boxW / Math.max(1, x1 - x0), boxH / Math.max(1, y1 - y0));
+      if (Math.abs(Math.log2(scale)) < 0.02) break;
+      this.map.setZoom(Math.min(15, this.map.getZoom() + Math.log2(scale) * 0.9));
+    }
   }
 
   play() {
@@ -198,6 +218,8 @@ export class Replay {
     const dim = (u: Unit) => (this.focus && this.focus !== u.id && !u.optimal ? 60 : 255);
     const heads = visible.map((u) => ({ u, at: positionAt(u.path, t) })).filter((h) => h.at);
     const live = this.alerts.filter((a) => t >= a.time);
+    const canvasW = this.map.getCanvas().clientWidth;
+    const side = (at: XY) => (this.map.project(at).x < canvasW / 2 ? "start" : "end");
     const places = [
       { at: this.task.start.at, label: "START" },
       ...(this.task.end ? [{ at: this.task.end.at, label: this.task.end.arrive_by != null ? `MEET BY ${clock(this.task.end.arrive_by)}` : "END" }] : []),
@@ -222,8 +244,9 @@ export class Replay {
           getFillColor: [11, 17, 16], getLineColor: [233, 230, 220], lineWidthUnits: "pixels", getLineWidth: 2, stroked: true,
         }),
         new TextLayer({
-          id: "place-labels", data: places, getPosition: (d) => d.at, getText: (d) => d.label, getSize: 12,
-          getColor: [233, 230, 220], getPixelOffset: [0, -16], fontFamily: "Barlow Condensed, sans-serif", fontWeight: 600,
+          id: "place-labels", data: places, getPosition: (d) => d.at, getText: (d) => d.label, getSize: 14,
+          getColor: [233, 230, 220], getTextAnchor: (d) => side(d.at), getPixelOffset: (d) => [side(d.at) === "start" ? 10 : -10, -12],
+          fontFamily: "Barlow Condensed, sans-serif", fontWeight: 600, updateTriggers: { getTextAnchor: [t], getPixelOffset: [t] },
           outlineWidth: 3, outlineColor: [11, 17, 16, 255], fontSettings: { sdf: true }, characterSet: "auto",
         }),
         new ScatterplotLayer({
@@ -235,10 +258,11 @@ export class Replay {
           id: "alert-dots", data: live, getPosition: (a) => a.at, getRadius: 6, radiusUnits: "pixels", getFillColor: ALERT,
         }),
         new TextLayer<Alert>({
-          id: "alert-labels", data: live, getPosition: (a) => a.at, getText: (a) => a.label, getSize: 13,
-          getColor: [255, 236, 234], getPixelOffset: (a) => [0, -20 - 21 * a.stack], fontFamily: "Barlow Condensed, sans-serif",
-          fontWeight: 700, characterSet: "auto", background: true, getBackgroundColor: [150, 32, 36, 235],
-          backgroundPadding: [5, 2, 5, 2], getTextAnchor: "middle",
+          id: "alert-labels", data: live, getPosition: (a) => a.at, getText: (a) => a.label, getSize: 16,
+          getColor: [255, 236, 234], getPixelOffset: (a) => [side(a.at) === "start" ? 12 : -12, -24 - 25 * a.stack],
+          fontFamily: "Barlow Condensed, sans-serif", fontWeight: 700, characterSet: "auto", background: true,
+          getBackgroundColor: [150, 32, 36, 235], backgroundPadding: [6, 3, 6, 3], getTextAnchor: (a) => side(a.at),
+          updateTriggers: { getTextAnchor: [t], getPixelOffset: [t] },
         }),
         new ScatterplotLayer<{ u: Unit; at: XY | null }>({
           id: "heads", data: heads, getPosition: (h) => h.at!, radiusUnits: "pixels",
@@ -258,7 +282,13 @@ export class Replay {
     }).join("");
     this.$(".ticket-meta").textContent =
       `${task.tier[0].toUpperCase()}${task.tier.slice(1)} tier · ${dateLabel(task.date)} · ${task.errands.length} errands${task.end ? " and a meet-up" : ""}`;
-    this.$(".ticket-request").textContent = task.prompt;
+    const request = this.$(".ticket-request");
+    request.textContent = task.prompt;
+    request.classList.remove("is-open");
+    const more = this.$(".request-more");
+    more.hidden = request.scrollHeight <= request.clientHeight + 2;
+    more.textContent = "Full request";
+    more.setAttribute("aria-expanded", "false");
     this.$(".ticket-errands").innerHTML = errands;
     this.$(".ticket-note").innerHTML = task.infeasible
       ? `<b>Impossible by design.</b> The right answer is to say so${task.reason ? ` (${escapeHtml(task.reason.replace(/_/g, " "))})` : ""}.`
@@ -277,7 +307,8 @@ export class Replay {
       li.style.setProperty("--unit", u.color);
       li.tabIndex = 0;
       li.innerHTML = `<span class="swatch" aria-hidden="true"></span><span class="unit-name">${escapeHtml(u.name)}</span>
-        <span class="unit-state"></span><span class="unit-result">${resultOf(u, best, this.task)}</span>`;
+        <span class="unit-result">${resultOf(u, best, this.task)}</span><span class="lamp" aria-hidden="true"></span>
+        <span class="unit-state"></span>`;
       const focus = (on: boolean) => {
         this.focus = on ? u.id : null;
         list.classList.toggle("focused", on);
@@ -297,8 +328,22 @@ export class Replay {
     for (const u of this.units) {
       const state = u.row?.querySelector(".unit-state");
       if (state) state.textContent = stateOf(u, this.t, this.task);
+      u.row?.setAttribute("data-lamp", lampOf(u, this.t, this.task));
     }
   }
+}
+
+/** Status lamp with fixed meanings: live while the outcome is open, then gold (optimal), ok (done on time),
+ *  bad (failed) or off (can't be checked). It changes state at the moment the unit's outcome is decided. */
+function lampOf(u: Unit, t: number, task: TaskInfo): string {
+  if (u.optimal) return u.path.length && t >= u.path[u.path.length - 1][2] ? "gold" : "live";
+  const p = u.plan;
+  if (!p || u.path.length < 2) return p?.kind === "unverifiable" ? "off" : p?.kind === "declined" && task.infeasible ? "ok" : "bad";
+  const failed = p.stops.find((s) => s.failed);
+  const decided = failed?.arrive ?? u.path[u.path.length - 1][2];
+  if (t < decided) return "live";
+  if (p.kind === "feasible") return "ok";
+  return p.kind === "unverifiable" ? "off" : "bad";
 }
 
 function positionAt(path: TimedPoint[], t: number): XY | null {
@@ -357,6 +402,29 @@ const KIND_TEXT: Record<string, string> = {
   missing: "No answer",
 };
 
+/** The stop behind a plan's verdict: a store that cannot exist outranks an earlier unverifiable one. */
+function verdictStop(p: Plan) {
+  if (p.kind === "wrong_address") return p.stops.find((s) => s.reason === "wrong_address");
+  if (p.kind === "no_such_store") return p.stops.find((s) => s.match === "hallucinated" && s.reason !== "wrong_address");
+  return p.stops.find((s) => s.match && s.match !== "matched");
+}
+
+const STORE_TEXT: Record<string, string> = {
+  wrong_address: "real store, not at that address",
+  no_such_store: "in neither OpenStreetMap nor the city registry",
+  not_in_osm: "real store OpenStreetMap lacks, hours unknown",
+  hours_unknown: "opening hours unknown",
+  category_unconfirmed: "mapped as a different kind of store",
+  hallucinated: "no such store",
+  unverifiable: "can't be checked",
+};
+
+const NO_PLAN_TEXT: Record<string, string> = {
+  invalid_json: "reply could not be read as a plan, even after one retry",
+  declined: "called the day impossible",
+  invalid_plan: "skipped or repeated an errand",
+};
+
 function resultOf(u: Unit, best: OraclePlan | null | undefined, task: TaskInfo): string {
   if (u.optimal) return u.oracle ? clock(u.oracle.finish) : "—";
   const p = u.plan;
@@ -369,18 +437,17 @@ function resultOf(u: Unit, best: OraclePlan | null | undefined, task: TaskInfo):
 function stateOf(u: Unit, t: number, task: TaskInfo): string {
   if (!u.optimal && (!u.plan || u.path.length < 2)) {
     const p = u.plan;
-    if (!p) return "no answer";
-    const blocked = p.stops.find((s) => s.match && s.match !== "matched");
-    if (blocked && (p.kind === "no_such_store" || p.kind === "wrong_address" || p.kind === "unverifiable"))
-      return `${KIND_TEXT[p.kind].toLowerCase()}: ${blocked.name}`;
-    return (KIND_TEXT[p.kind] ?? p.kind).toLowerCase();
+    if (!p) return "sent no answer for this task";
+    const blocked = verdictStop(p);
+    if (blocked) return `${blocked.name}: ${STORE_TEXT[blocked.reason ?? blocked.match ?? ""] ?? "can't be matched"}`;
+    return NO_PLAN_TEXT[p.kind] ?? (KIND_TEXT[p.kind] ?? p.kind).toLowerCase();
   }
   const stops = u.optimal ? u.oracle!.stops : u.plan!.stops;
   if (t <= task.start.depart) return `ready at ${task.start.label}`;
   for (const s of stops) {
     if (s.arrive == null) break;
     if (t < s.arrive) return `en route to ${s.name}`;
-    if (s.failed && t >= s.arrive) return s.failed === "closed" ? `closed: ${s.name}` : `${s.failed}: ${s.name}`;
+    if (s.failed && t >= s.arrive) return s.failed === "closed" ? `${s.name} was closed` : `missed the deadline at ${s.name}`;
     if (s.done != null && t < s.done) return `at ${s.name}`;
   }
   const end = u.path[u.path.length - 1][2];
@@ -390,9 +457,9 @@ function stateOf(u: Unit, t: number, task: TaskInfo): string {
     return `arrived ${clock(end)}${late ? `, ${late} min late` : ""}`;
   }
   if (u.plan && u.plan.kind !== "feasible") {
-    const blocked = u.plan.stops.find((s) => s.match && s.match !== "matched");
-    if (blocked) return `${KIND_TEXT[u.plan.kind].toLowerCase()}: ${blocked.name}`;
-    return (KIND_TEXT[u.plan.kind] ?? u.plan.kind).toLowerCase();
+    const blocked = verdictStop(u.plan);
+    if (blocked) return `${blocked.name}: ${STORE_TEXT[blocked.reason ?? blocked.match ?? ""] ?? "can't be matched"}`;
+    return NO_PLAN_TEXT[u.plan.kind] ?? (KIND_TEXT[u.plan.kind] ?? u.plan.kind).toLowerCase();
   }
   return task.end ? `arrived ${clock(end)}` : `done ${clock(end)}`;
 }

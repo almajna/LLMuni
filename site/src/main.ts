@@ -22,6 +22,7 @@ const MODE_HELP: Record<string, string> = {
   open_book: "Open book: the request lists candidate stores with their addresses, opening hours and coordinates. The model still has to work out travel times itself.",
   closed_book: "Closed book: the request names only the errands. The model has to know real San Francisco stores, their addresses and their hours.",
 };
+const TOOL_NOTE = " A third mode, with a travel-time tool, is planned for v2 and was not run in this release.";
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 
@@ -38,10 +39,22 @@ async function start() {
     $(".lede").textContent = `The results could not be loaded (${(err as Error).message}). Run \`npm run data\` in site/ to export them.`;
     return;
   }
-  await document.fonts.ready;
+  // deck.gl bakes its label atlas from whatever is loaded when a layer first draws: load the weights it uses.
+  await Promise.all([document.fonts.ready, document.fonts.load("700 13px 'Barlow Condensed'"),
+    document.fonts.load("600 12px 'Barlow Condensed'")]);
 
+  const m = data.meta;
+  $(".stamp").textContent = `${m.run === "final" ? "Final run" : `${m.run[0].toUpperCase()}${m.run.slice(1)} run`} · ${m.tasks} tasks · ${m.benchmark_version} · OSM ${m.osm_date}`;
   const message = new Flaps(34, { size: "s" });
   $(".message").append(message.el);
+  const messageRows = [new Flaps(20, { size: "s" }), new Flaps(20, { size: "s" })]; // phones: two rows of 20 cells
+  $(".message-rows").append(...messageRows.map((f) => f.el));
+  const setMessage = (text: string, delay: number) => {
+    message.set(text, { stagger: 16, steps: 4, stepMs: 60, delay });
+    const [a, b] = splitLine(text, 20);
+    messageRows[0].set(a, { stagger: 16, steps: 4, stepMs: 60, delay });
+    messageRows[1].set(b, { stagger: 16, steps: 4, stepMs: 60, delay: delay + 120 });
+  };
   const tasks = data.tasks.slice().sort((a, b) => ["easy", "medium", "hard"].indexOf(a.tier) - ["easy", "medium", "hard"].indexOf(b.tier) || a.id.localeCompare(b.id));
   $<HTMLSelectElement>(".task-select").innerHTML = ["easy", "medium", "hard"].map((tier) => `<optgroup label="${tier[0].toUpperCase()}${tier.slice(1)}">${
     tasks.filter((t) => t.tier === tier).map((t) => `<option value="${t.id}">${t.id.replace(/^v[\d.]+-/, "")} · ${t.weekday.slice(0, 3)} · ${t.errands.length} errands${t.infeasible ? " · impossible" : ""}</option>`).join("")
@@ -79,12 +92,12 @@ async function start() {
     if (boardChanged && boardSeen) board.show(state.mode, state.tier);
     document.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode)));
     document.querySelectorAll<HTMLButtonElement>("[data-tier]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tier === state.tier)));
-    $(".mode-help").textContent = MODE_HELP[state.mode] ?? "";
+    $(".mode-help").textContent = (MODE_HELP[state.mode] ?? "") + TOOL_NOTE;
     renderFailures(data, state.mode, $(".fail-figure"), $(".fail-legend"));
     $(".fail-caption").textContent = `${MODE_LABEL[state.mode]}, ${data.meta.feasible_tasks} feasible tasks per model. What became of each plan when it was replayed.`;
     const headline = headlineFor(data, state.mode);
     $(".headline-text").textContent = `${headline.text}. ${headline.note}`;
-    message.set(headline.text, { stagger: 16, steps: 4, stepMs: 60, delay: first ? 400 : 0 });
+    setMessage(headline.text, first ? 400 : 0);
     $(".message-note").textContent = headline.note;
     first = false;
   }
@@ -107,15 +120,21 @@ async function start() {
   renderFacts(data);
 }
 
+function splitLine(text: string, width: number): [string, string] {
+  if (text.length <= width) return [text, ""];
+  const cut = text.lastIndexOf(" ", width);
+  return cut > 0 ? [text.slice(0, cut), text.slice(cut + 1)] : [text.slice(0, width), text.slice(width)];
+}
+
 function headlineFor(data: Bundle, mode: string): { text: string; note: string } {
-  const run = data.meta.run === "final" ? "" : ` (${data.meta.run} run)`;
+  const scope = `${data.meta.run === "final" ? "Final run" : `${data.meta.run} run`}, ${data.meta.tasks} tasks.`;
   const rows = Object.entries(data.results.per_model).filter(([, m]) => m[mode]).map(([id, m]) => ({ id, s: m[mode] }));
   if (mode === "closed_book") {
     const best = Math.max(...rows.map((r) => r.s.feasible_pct ?? 0));
     const worked = rows.filter((r) => (r.s.feasible_pct ?? 0) > 0).length;
     return {
       text: best > 0 ? `Closed book: best model ${pct(best)} feasible` : `Closed book: 0 working plans`,
-      note: `${worked} of ${rows.length} models produced any plan that works without a store list${run}.`,
+      note: `${worked} of ${rows.length} models produced any plan that works without a store list. ${scope}`,
     };
   }
   const feasible = rows.filter((r) => r.s.median_gap != null).sort((a, b) =>
@@ -124,7 +143,7 @@ function headlineFor(data: Bundle, mode: string): { text: string; note: string }
   if (!top) return { text: "No feasible plans yet", note: "" };
   return {
     text: `${modelName(top.id)}: ${pct(top.s.feasible_pct)} feasible, ${gap(top.s.median_gap)}`,
-    note: `Top of the open-book standings: feasible share, then median extra time over the optimal plan${run}.`,
+    note: `Top of the open-book standings: ${Math.round(((top.s.feasible_pct ?? 0) / 100) * data.meta.feasible_tasks)} of ${data.meta.feasible_tasks} feasible tasks planned right, median extra time over the optimal plan. ${scope}`,
   };
 }
 

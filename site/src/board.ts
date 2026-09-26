@@ -33,7 +33,7 @@ const COLUMNS: Column[] = [
 
 export class Board {
   private readonly body: HTMLTableSectionElement;
-  private readonly rows: { tr: HTMLTableRowElement; lamp: HTMLSpanElement; cells: Flaps[]; sr: HTMLSpanElement[] }[] = [];
+  private readonly rows: { tr: HTMLTableRowElement; lamp: HTMLSpanElement; cells: Flaps[]; sr: HTMLSpanElement[]; line: Flaps }[] = [];
   private readonly caption: HTMLElement;
 
   constructor(private readonly data: Bundle, table: HTMLTableElement, caption: HTMLElement) {
@@ -51,7 +51,9 @@ export class Board {
     for (let i = 0; i < n; i++) {
       const tr = this.body.insertRow();
       const lamp = document.createElement("span");
-      lamp.className = "lamp";
+      lamp.className = "key";
+      const line = new Flaps(16, { size: "s" }); // phones: the key numbers under the name
+      line.el.classList.add("mline");
       const cells: Flaps[] = [], sr: HTMLSpanElement[] = [];
       COLUMNS.forEach((c, k) => {
         const td = tr.insertCell();
@@ -61,10 +63,11 @@ export class Board {
         const hidden = document.createElement("span");
         hidden.className = "sr-only";
         td.append(flaps.el, hidden);
+        if (c.key === "model") td.append(line.el);
         cells.push(flaps);
         sr.push(hidden);
       });
-      this.rows.push({ tr, lamp, cells, sr });
+      this.rows.push({ tr, lamp, cells, sr, line });
     }
   }
 
@@ -96,10 +99,15 @@ export class Board {
         slot.cells[k].set(text, animate ? { delay: i * 55, stagger: 11, steps: 4, stepMs: 64 } : { stepMs: 0 });
         slot.sr[k].textContent = row ? c.sr(row) : "";
       });
+      const cost = row && !row.baseline && row.s.tasks ? `$${(row.s.cost_usd / row.s.tasks).toFixed(2).replace(/^0/, "")}` : "";
+      slot.line.set(row ? `${pct(row.s.feasible_pct)} ${gap(row.s.median_gap)} ${cost}`.trim() : "",
+        animate ? { delay: i * 55 + 200, stagger: 11, steps: 3, stepMs: 64 } : { stepMs: 0 });
     });
     const tierTasks = tier === "all" ? this.data.meta.tasks : this.data.meta.tasks_by_tier[tier] ?? 0;
     const feasible = this.data.tasks.filter((t) => (tier === "all" || t.tier === tier) && !t.infeasible).length;
+    const noneWork = rows.filter((r) => !r.baseline).every((r) => !r.s.feasible_pct);
     this.caption.textContent = `${tierTasks} tasks (${feasible} feasible, ${tierTasks - feasible} impossible by design)`
-      + `${this.data.meta.run === "final" ? "" : ` · ${this.data.meta.run} run`}`;
+      + `${this.data.meta.run === "final" ? " · final run" : ` · ${this.data.meta.run} run`}`
+      + (noneWork ? ". No model produced a working plan here, so rows are ordered by fewest impossible plans, then fewest stores that don't exist." : "");
   }
 }

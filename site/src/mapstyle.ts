@@ -10,7 +10,7 @@ const C = {
   street: "#1b2624",
   major: "#24312f",
   rail: "#3b4a47",
-  building: "#151f1d",
+  building: "#1c2826",
   label: "#6f817a",
   halo: "#0b1110",
 };

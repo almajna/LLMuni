@@ -8,6 +8,12 @@
     <meta name="theme-color" content="#0b1110" />
     <meta property="og:title" content="LLMuni · Can LLMs ride Muni?" />
     <meta property="og:description" content="Language models plan real San Francisco errand days. Every plan is replayed on the Muni and BART timetable against the provably optimal plan." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Seven AI models' routes across San Francisco on one errand day, with an arrivals board comparing them to the optimal plan" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
@@ -15,6 +21,7 @@
     <header class="strip">
       <a class="plate" href="#replay" aria-label="LLMuni, back to the replay"></a>
       <h1 class="question">Can LLMs ride Muni?</h1>
+      <p class="stamp"></p>
       <nav class="nav" aria-label="Sections">
         <a href="#replay">Replay</a>
         <a href="#standings">Standings</a>
@@ -31,8 +38,11 @@
         <div class="mount" aria-live="polite">
           <p class="sr-only headline-text"></p>
           <div class="message" aria-hidden="true"></div>
+          <div class="message-rows" aria-hidden="true"></div>
           <p class="message-note"></p>
         </div>
+
+        <p class="wall-note" aria-hidden="true">Arcs join each plan's stops in visiting order, not the streets taken; every clock is the timetable replay.</p>
 
         <aside class="rail" aria-label="Replay controls and units">
           <p class="lede">Seven frontier models planned this San Francisco errand day. Every plan is replayed on the real Muni and BART timetable; <span class="gold">gold</span> is the provably optimal plan.</p>
@@ -43,7 +53,8 @@
               <label class="task-pick"><span class="sr-only">Errand day</span><select class="task-select"></select></label>
             </div>
             <p class="ticket-meta"></p>
-            <p class="ticket-request"></p>
+            <p class="ticket-request" id="ticket-request"></p>
+            <button type="button" class="request-more" aria-controls="ticket-request" aria-expanded="false" hidden>Full request</button>
             <ul class="ticket-errands" aria-label="Errands"></ul>
             <p class="ticket-note"></p>
           </div>
@@ -83,6 +94,7 @@
             <div class="switch mode-switch" role="group" aria-label="Mode">
               <button type="button" data-mode="open_book" aria-pressed="true">Open book</button>
               <button type="button" data-mode="closed_book" aria-pressed="false">Closed book</button>
+              <button type="button" class="not-run" disabled title="Planned for v2; not run in this release">Travel tool · v2</button>
             </div>
             <div class="switch tier-switch" role="group" aria-label="Difficulty">
               <button type="button" data-tier="all" aria-pressed="true">All</button>
