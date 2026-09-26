@@ -229,7 +229,10 @@ input, select { font: inherit; color: inherit; caret-color: var(--gold); }
 .unit[data-kind="optimal"] .swatch { height: 6px; }
 .unit-name { grid-area: name; font-weight: 600; font-size: 14px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .unit[data-kind="optimal"] .unit-name { color: var(--gold); }
-.unit-state { grid-area: state; font-size: 12px; line-height: 1.25; color: var(--label); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.unit-state { grid-area: state; font-size: 12px; line-height: 1.3; color: var(--label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.unit:hover .unit-state, .unit:focus-visible .unit-state { white-space: normal; }
+/* a list that scrolls says so: its last row fades out */
+.unit-list.has-more { mask-image: linear-gradient(#000 calc(100% - 44px), transparent); }
 .unit-result { grid-area: result; font: 600 14px/1.3 var(--signage); letter-spacing: 0.03em; text-align: right; white-space: nowrap; }
 .unit-result small { font: 500 12px var(--signage); color: var(--label); margin-left: 4px; }
 .unit-result .bad { color: #ff8f8a; }

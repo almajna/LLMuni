@@ -31,7 +31,8 @@ interface Alert {
   at: XY;
   time: number;
   label: string;
-  stack: number; // labels at nearby places stack upwards instead of overlapping
+  stack: number; // labels at nearby places stack instead of overlapping
+  atEnd: boolean; // late at the meet-up: stacks above; a failure at a store hangs below its point
 }
 
 export class Replay {
@@ -259,7 +260,8 @@ export class Replay {
         }),
         new TextLayer<Alert>({
           id: "alert-labels", data: live, getPosition: (a) => a.at, getText: (a) => a.label, getSize: 16,
-          getColor: [255, 236, 234], getPixelOffset: (a) => [side(a.at) === "start" ? 12 : -12, -24 - 25 * a.stack],
+          getColor: [255, 236, 234], getPixelOffset: (a) => [side(a.at) === "start" ? 12 : -12, a.atEnd ? -12 - 25 * a.stack : 16 + 25 * a.stack],
+          getAlignmentBaseline: (a) => (a.atEnd ? "bottom" : "top"),
           fontFamily: "Barlow Condensed, sans-serif", fontWeight: 700, characterSet: "auto", background: true,
           getBackgroundColor: [150, 32, 36, 235], backgroundPadding: [6, 3, 6, 3], getTextAnchor: (a) => side(a.at),
           updateTriggers: { getTextAnchor: [t], getPixelOffset: [t] },
@@ -299,6 +301,9 @@ export class Replay {
   private renderUnits() {
     const list = this.$(".unit-list");
     list.replaceChildren();
+    const cue = () => list.classList.toggle("has-more", list.scrollTop + list.clientHeight < list.scrollHeight - 2);
+    list.onscroll = cue;
+    requestAnimationFrame(cue);
     const best = this.units.find((u) => u.optimal)?.oracle;
     for (const u of this.units) {
       const li = document.createElement("li");
@@ -327,7 +332,13 @@ export class Replay {
   private updateUnits() {
     for (const u of this.units) {
       const state = u.row?.querySelector(".unit-state");
-      if (state) state.textContent = stateOf(u, this.t, this.task);
+      if (state) {
+        const text = stateOf(u, this.t, this.task);
+        if (state.textContent !== text) {
+          state.textContent = text;
+          u.row!.title = `${u.name}: ${text}`;
+        }
+      }
       u.row?.setAttribute("data-lamp", lampOf(u, this.t, this.task));
     }
   }
@@ -364,9 +375,10 @@ function stack(alerts: Alert[], task: TaskInfo): Alert[] {
   const near = (a: XY, b: XY) => Math.abs(a[0] - b[0]) < 0.004 && Math.abs(a[1] - b[1]) < 0.003;
   const placed: Alert[] = [];
   for (const a of alerts.sort((x, y) => x.time - y.time)) {
-    const below = placed.filter((p) => near(p.at, a.at)).length;
-    const endLabel = task.end && near(task.end.at, a.at) ? 1 : 0; // the meet-up label sits there already
-    placed.push({ ...a, stack: below + endLabel });
+    // late arrivals stack upwards above the meet-up label (slot 0); store failures hang downwards from their point
+    const atEnd = a.atEnd || (!!task.end && near(task.end.at, a.at));
+    const sameSide = placed.filter((p) => p.atEnd === atEnd && near(p.at, a.at)).length;
+    placed.push({ ...a, atEnd, stack: atEnd ? sameSide + 1 : sameSide });
   }
   return placed;
 }
@@ -377,11 +389,11 @@ function alertOf(u: Unit, task: TaskInfo): Alert[] {
   const failed = p.stops.find((s) => s.failed);
   if (failed?.at && failed.arrive != null) {
     const label = failed.failed === "closed" ? "CLOSED" : failed.failed === "deadline" ? "MISSED DEADLINE" : failed.failed!.toUpperCase();
-    return [{ at: failed.at, time: failed.arrive, label: `${modelName(u.id).toUpperCase()} · ${label}`, stack: 0 }];
+    return [{ at: failed.at, time: failed.arrive, label: `${modelName(u.id).toUpperCase()} · ${label}`, stack: 0, atEnd: false }];
   }
   if (p.kind === "late" && task.end && p.end_arrive != null) {
     const late = task.end.arrive_by != null ? Math.round(p.end_arrive - task.end.arrive_by) : null;
-    return [{ at: task.end.at, time: p.end_arrive, label: `${modelName(u.id).toUpperCase()} · LATE${late ? ` +${late} MIN` : ""}`, stack: 0 }];
+    return [{ at: task.end.at, time: p.end_arrive, label: `${modelName(u.id).toUpperCase()} · LATE${late ? ` +${late} MIN` : ""}`, stack: 0, atEnd: true }];
   }
   return [];
 }

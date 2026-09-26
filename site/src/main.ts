@@ -122,6 +122,8 @@ async function start() {
 
 function splitLine(text: string, width: number): [string, string] {
   if (text.length <= width) return [text, ""];
+  const colon = text.indexOf(": ");
+  if (colon > 0 && colon < width && text.length - colon - 2 <= width) return [text.slice(0, colon + 1), text.slice(colon + 2)];
   const cut = text.lastIndexOf(" ", width);
   return cut > 0 ? [text.slice(0, cut), text.slice(cut + 1)] : [text.slice(0, width), text.slice(width)];
 }

@@ -99,7 +99,8 @@ export class Board {
         slot.cells[k].set(text, animate ? { delay: i * 55, stagger: 11, steps: 4, stepMs: 64 } : { stepMs: 0 });
         slot.sr[k].textContent = row ? c.sr(row) : "";
       });
-      const cost = row && !row.baseline && row.s.tasks ? `$${(row.s.cost_usd / row.s.tasks).toFixed(2).replace(/^0/, "")}` : "";
+      const perTask = row && !row.baseline && row.s.tasks ? row.s.cost_usd / row.s.tasks : null; // same precision as the $ column
+      const cost = perTask == null ? "" : `$${perTask.toFixed(perTask < 0.1 ? 3 : 2).replace(/^0/, "")}`;
       slot.line.set(row ? `${pct(row.s.feasible_pct)} ${gap(row.s.median_gap)} ${cost}`.trim() : "",
         animate ? { delay: i * 55 + 200, stagger: 11, steps: 3, stepMs: 64 } : { stepMs: 0 });
     });
